@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>假日實驗室 v12.13</title>
+    <title>假日實驗室 v13.1</title>
     <style>
         :root {
             --primary: #2d3436;
@@ -27,7 +27,12 @@
             max-width: 850px; margin: 0 auto; background: rgba(255, 255, 255, 0.95); 
             padding: 25px; border-radius: 25px; box-shadow: 0 15px 35px rgba(0,0,0,0.1); border: 4px solid #fff;
         }
-        
+
+        /* 導覽列分頁標籤 */
+        .tab-nav { display: flex; gap: 10px; margin-bottom: 20px; justify-content: center; }
+        .tab-btn { padding: 10px 20px; border-radius: 12px; font-weight: bold; font-size: 1.1rem; cursor: pointer; border: 2px solid #dfe6e9; background: #f1f2f6; color: #636e72; transition: 0.3s; }
+        .tab-btn.active { background: #00cec9; color: white; border-color: #00b894; box-shadow: 0 4px 10px rgba(0,184,148,0.2); }
+
         .header-panel { text-align: center; padding-bottom: 5px; margin-bottom: 15px; }
         .header-panel h1 { margin: 0; font-size: 2rem; color: #2d3436; text-shadow: 2px 2px 0px #dfe6e9; letter-spacing: 2px; }
         
@@ -94,63 +99,191 @@
 
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); justify-content: center; align-items: center; z-index: 2000; backdrop-filter: blur(3px); }
         .modal-content { background: white; padding: 25px; border-radius: 20px; width: 85%; max-width: 400px; display: flex; flex-direction: column; gap: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); border: 4px solid #00cec9; }
+        .modal-content h3 { margin: 0; color: #00b894; border-bottom: 2px solid #f1f2f6; padding-bottom: 10px; }
         .modal-content textarea { width: 92%; padding: 12px; height: 100px; border: 1px solid #dfe6e9; border-radius: 8px; font-size: 1.05rem; resize: none; font-family: inherit; }
         .btn-submit-task { background: #00b894; color: white; border: none; padding: 12px; border-radius: 8px; font-weight: bold; font-size: 1.1rem; cursor: pointer; }
         .btn-cancel { background: #b2bec3; color: white; border: none; padding: 8px; border-radius: 8px; font-weight: bold; cursor: pointer; }
+
+        /* 設定頁樣式更新 */
+        .domain-setting-block { background: #fff; padding: 18px; border-radius: 12px; margin-bottom: 15px; border: 2px solid #dfe6e9; box-shadow: 0 4px 10px rgba(0,0,0,0.02); }
+        .domain-title { color: #0984e3; margin-top: 0; margin-bottom: 12px; border-bottom: 2px dashed #74b9ff; padding-bottom: 8px; display: flex; align-items: center; gap: 8px; font-size: 1.2rem; }
+        .settings-input-group { display: flex; gap: 10px; margin-bottom: 15px; }
+        .settings-input-group input { flex-grow: 1; padding: 10px; border: 1px solid #dfe6e9; border-radius: 8px; font-size: 1rem; }
+        .settings-input-group button { background: #00cec9; color: white; border: none; padding: 10px 15px; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.2s; }
+        .settings-input-group button:active { transform: scale(0.95); }
+        .settings-list { list-style: none; padding: 0; margin: 0; }
+        .settings-list li { display: flex; justify-content: space-between; align-items: center; padding: 10px 12px; background: #f1f2f6; border-radius: 8px; margin-bottom: 8px; font-weight: bold; color: #2d3436; border-left: 4px solid #b2bec3; }
+        .settings-list li button { background: #ff7675; color: white; border: none; border-radius: 6px; padding: 5px 12px; cursor: pointer; font-weight: bold; transition: 0.2s; }
+        .settings-list li button:active { transform: scale(0.9); }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <div class="header-panel">
-        <h1>🧪 假日實驗室</h1>
-        <div class="quote-box"><span id="quoteText" class="fade-text">Focus is your superpower!</span></div>
+    <div class="tab-nav">
+        <div class="tab-btn active" onclick="switchTab('view-main', this)">🏠 主控台</div>
+        <div class="tab-btn" onclick="switchTab('view-settings', this)">⚙️ 設定頁</div>
     </div>
 
-    <div class="time-config">
-        <div class="time-capsule t-morning"><span class="time-label">🌅 早上</span>
-            <div class="time-inputs-row"><input type="number" class="time-input" id="t_m_h" min="0" oninput="if(this.value<0)this.value=0;" onchange="calculateTime()"> : <input type="number" class="time-input" id="t_m_m" min="0" oninput="if(this.value<0)this.value=0;" onchange="calculateTime()"></div>
+    <div id="view-main">
+        <div class="header-panel">
+            <h1>🧪 假日實驗室</h1>
+            <div class="quote-box"><span id="quoteText" class="fade-text">Focus is your superpower!</span></div>
         </div>
-        <div class="time-capsule t-afternoon"><span class="time-label">☀️ 下午</span>
-            <div class="time-inputs-row"><input type="number" class="time-input" id="t_a_h" min="0" oninput="if(this.value<0)this.value=0;" onchange="calculateTime()"> : <input type="number" class="time-input" id="t_a_m" min="0" oninput="if(this.value<0)this.value=0;" onchange="calculateTime()"></div>
+
+        <div class="time-config">
+            <div class="time-capsule t-morning"><span class="time-label">🌅 早上</span>
+                <div class="time-inputs-row"><input type="number" class="time-input" id="t_m_h" min="0" oninput="if(this.value<0)this.value=0;" onchange="calculateTime()"> : <input type="number" class="time-input" id="t_m_m" min="0" oninput="if(this.value<0)this.value=0;" onchange="calculateTime()"></div>
+            </div>
+            <div class="time-capsule t-afternoon"><span class="time-label">☀️ 下午</span>
+                <div class="time-inputs-row"><input type="number" class="time-input" id="t_a_h" min="0" oninput="if(this.value<0)this.value=0;" onchange="calculateTime()"> : <input type="number" class="time-input" id="t_a_m" min="0" oninput="if(this.value<0)this.value=0;" onchange="calculateTime()"></div>
+            </div>
+            <div class="time-capsule t-evening"><span class="time-label">🌙 晚上</span>
+                <div class="time-inputs-row"><input type="number" class="time-input" id="t_e_h" min="0" oninput="if(this.value<0)this.value=0;" onchange="calculateTime()"> : <input type="number" class="time-input" id="t_e_m" min="0" oninput="if(this.value<0)this.value=0;" onchange="calculateTime()"></div>
+            </div>
         </div>
-        <div class="time-capsule t-evening"><span class="time-label">🌙 晚上</span>
-            <div class="time-inputs-row"><input type="number" class="time-input" id="t_e_h" min="0" oninput="if(this.value<0)this.value=0;" onchange="calculateTime()"> : <input type="number" class="time-input" id="t_e_m" min="0" oninput="if(this.value<0)this.value=0;" onchange="calculateTime()"></div>
+
+        <div class="monitor-panel">
+            <div class="total-time-text" id="totalTimeText">等待輸入時間資源...</div>
+            <div class="bar-container">
+                <div class="bar-tasks" id="taskBar"></div>
+                <div class="bar-free" id="freeBar"></div>
+            </div>
         </div>
+
+        <div id="missionContainer">
+            <div class="period-section section-1"><div class="section-title-period title-c1"><div class="title-left">🌅 上午實驗區</div><span id="rem-1" class="period-rem">未設定時間</span></div><div id="list-1" class="grid-list"></div></div>
+            <div class="period-section section-2"><div class="section-title-period title-c2"><div class="title-left">☀️ 下午實驗區</div><span id="rem-2" class="period-rem">未設定時間</span></div><div id="list-2" class="grid-list"></div></div>
+            <div class="period-section section-3"><div class="section-title-period title-c3"><div class="title-left">🌙 晚上實驗區</div><span id="rem-3" class="period-rem">未設定時間</span></div><div id="list-3" class="grid-list"></div></div>
+        </div>
+        
+        <button class="add-btn" onclick="addNewTask()">➕ 增加新實驗任務</button>
+        <div class="section-title">🎁 能量兌換站</div>
+        <div id="exchangeContainer" class="grid-list"></div>
+        <button class="add-btn add-btn-ex" onclick="addNewExchange()">➕ 增加兌換項目</button>
     </div>
 
-    <div class="monitor-panel">
-        <div class="total-time-text" id="totalTimeText">等待輸入時間資源...</div>
-        <div class="bar-container">
-            <div class="bar-tasks" id="taskBar"></div>
-            <div class="bar-free" id="freeBar"></div>
+    <div id="view-settings" style="display: none;">
+        <div class="header-panel">
+            <h1>⚙️ 系統設定中心</h1>
+            <p style="color:#636e72; font-weight:bold; font-size:1.1rem;">在此管理「內容描述」的預設下拉選項</p>
         </div>
+        
+        <div id="settings-container"></div>
     </div>
-
-    <div id="missionContainer">
-        <div class="period-section section-1"><div class="section-title-period title-c1"><div class="title-left">🌅 上午實驗區</div><span id="rem-1" class="period-rem">未設定時間</span></div><div id="list-1" class="grid-list"></div></div>
-        <div class="period-section section-2"><div class="section-title-period title-c2"><div class="title-left">☀️ 下午實驗區</div><span id="rem-2" class="period-rem">未設定時間</span></div><div id="list-2" class="grid-list"></div></div>
-        <div class="period-section section-3"><div class="section-title-period title-c3"><div class="title-left">🌙 晚上實驗區</div><span id="rem-3" class="period-rem">未設定時間</span></div><div id="list-3" class="grid-list"></div></div>
-    </div>
-    
-    <button class="add-btn" onclick="addNewTask()">➕ 增加新實驗任務</button>
-    <div class="section-title">🎁 能量兌換站</div>
-    <div id="exchangeContainer" class="grid-list"></div>
-    <button class="add-btn add-btn-ex" onclick="addNewExchange()">➕ 增加兌換項目</button>
 </div>
 
 <div class="ep-footer"><div class="ep-content"><span class="ep-label">總累積 EP</span><span class="ep-score" id="epScore">0</span></div></div>
 
-<div class="modal" id="taskModal"><div class="modal-content"><h3>✅ 實驗發現與紀錄</h3><p style="font-weight:bold; color:#2d3436; margin:0;">領域：<span id="modalTaskName"></span></p><p style="font-size:0.9rem; color:#636e72; margin-top:-5px;">進度：<span id="modalTaskProgress"></span></p><textarea id="taskReflection" placeholder="把你的心得、發現或遇到的挑戰記錄下來吧..."></textarea><button class="btn-submit-task" id="btnSubmitTask" onclick="submitTask()">紀錄完成並獲取 5 EP</button><button class="btn-cancel" onclick="cancelTask()">先不要打卡</button></div></div>
+<div class="modal" id="taskModal"><div class="modal-content"><h3>✅ 實驗發現與紀錄</h3><p style="font-weight:bold; color:#2d3436; margin:0;">領域：<span id="modalTaskName"></span></p><p style="font-size:0.9rem; color:#636e72; margin-top:-5px;">內容：<span id="modalTaskProgress"></span></p><textarea id="taskReflection" placeholder="把你的心得、發現或遇到的挑戰記錄下來吧..."></textarea><button class="btn-submit-task" id="btnSubmitTask" onclick="submitTask()">紀錄完成並獲取 5 EP</button><button class="btn-cancel" onclick="cancelTask()">先不要打卡</button></div></div>
+
+<div id="datalists-container"></div>
 
 <script>
     let totalEP = 0;
     let currentTaskCheckbox = null;
+    
+    // 七大核心領域，其他不包含在此設定中
+    const domains = ["語文/閱讀", "數學/邏輯", "社會/人文", "自然/科技", "藝術", "健康/體育", "綜合"];
+    const predefinedTasks = ["選擇領域...", ...domains, "其他"];
+    
+    // 將每個領域的選項分開管理
+    let domainOptionsData = {
+        "語文/閱讀": ["閱讀第1章", "背誦課文", "中/英文習作"],
+        "數學/邏輯": ["完成數學習作", "解謎挑戰", "計算練習"],
+        "社會/人文": ["看故事書", "查閱歷史地圖"],
+        "自然/科技": ["自然觀察日記", "看科普影片", "程式練習"],
+        "藝術": ["樂器練習", "繪畫創作", "摺紙/手作"],
+        "健康/體育": ["跳繩", "跑步", "打球", "拉筋伸展"],
+        "綜合": ["專題研究", "整理房間", "準備明日物品"]
+    };
+
     const quotes = ["Focus is your superpower!\n專注就是你的超能力！", "Mistakes are just data.\n錯誤只是實驗數據。", "You are evolving every day!\n你每天都在進化中！", "Keep exploring, Scientist!\n繼續探索吧，科學家！", "Every effort counts!\n每一份努力都算數！", "Level up your brain!\n讓你的大腦升級吧！", "Stay curious, stay wild!\n保持好奇，保持熱血！", "Challenge accepted!\n接受挑戰，你可以的！"];
     let qIdx = 0;
-    const predefinedTasks = ["選擇領域...", "語文/閱讀", "數學/邏輯", "社會/人文", "自然/科技", "藝術", "健康/體育", "綜合", "其他"];
 
-    window.onload = function() { rotateQuotes(); addNewTask(); addNewExchange(); calculateTime(); updateEP(); };
+    window.onload = function() { 
+        renderSettings(); 
+        rotateQuotes(); 
+        addNewTask(); 
+        addNewExchange(); 
+        calculateTime(); 
+        updateEP(); 
+    };
+    
+    function switchTab(viewId, btnElement) {
+        document.getElementById('view-main').style.display = 'none';
+        document.getElementById('view-settings').style.display = 'none';
+        document.getElementById(viewId).style.display = 'block';
+        document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+        btnElement.classList.add('active');
+    }
+
+    // === 設定頁與 Datalist 渲染邏輯 ===
+    function renderSettings() {
+        const container = document.getElementById('settings-container');
+        container.innerHTML = '';
+        
+        domains.forEach((dom, dIdx) => {
+            let html = `
+                <div class="domain-setting-block">
+                    <h3 class="domain-title">📌 ${dom}</h3>
+                    <div class="settings-input-group">
+                        <input type="text" id="new-opt-${dIdx}" placeholder="輸入新的內容描述">
+                        <button onclick="addDomainOption('${dom}', ${dIdx})">➕ 新增</button>
+                    </div>
+                    <ul class="settings-list">
+            `;
+            domainOptionsData[dom].forEach((opt, oIdx) => {
+                html += `<li>${opt} <button onclick="removeDomainOption('${dom}', ${oIdx})">刪除</button></li>`;
+            });
+            html += `</ul></div>`;
+            container.innerHTML += html;
+        });
+        
+        // 同步更新隱藏的 datalist，供主控台使用
+        renderDatalists();
+    }
+
+    function addDomainOption(domain, dIdx) {
+        const input = document.getElementById(`new-opt-${dIdx}`);
+        const val = input.value.trim();
+        if(val && !domainOptionsData[domain].includes(val)) {
+            domainOptionsData[domain].push(val);
+            renderSettings();
+        }
+    }
+
+    function removeDomainOption(domain, oIdx) {
+        domainOptionsData[domain].splice(oIdx, 1);
+        renderSettings();
+    }
+
+    function renderDatalists() {
+        const dlContainer = document.getElementById('datalists-container');
+        dlContainer.innerHTML = '';
+        domains.forEach((dom, dIdx) => {
+            let html = `<datalist id="dl-opt-${dIdx}">`;
+            domainOptionsData[dom].forEach(opt => { html += `<option value="${opt}">`; });
+            html += `</datalist>`;
+            dlContainer.innerHTML += html;
+        });
+    }
+
+    // 當任務選擇領域時，自動切換對應的 datalist 內容
+    function handleDomainChange(selectEl) {
+        const domain = selectEl.value;
+        const inputEl = selectEl.parentElement.querySelector('.progress-input');
+        const dIdx = domains.indexOf(domain);
+        
+        if (dIdx !== -1) {
+            inputEl.setAttribute('list', 'dl-opt-' + dIdx);
+            inputEl.value = ''; // 切換領域時清空原本的內容避免錯亂
+        } else {
+            inputEl.removeAttribute('list'); // 選擇「其他」或未選擇時，移除自動完成
+            inputEl.value = '';
+        }
+    }
+
     function rotateQuotes() { const el = document.getElementById('quoteText'); el.innerText = quotes[qIdx]; qIdx = (qIdx + 1) % quotes.length; setTimeout(rotateQuotes, 10000); }
 
     function calculateTime() {
@@ -194,18 +327,49 @@
     function addNewTask() {
         const div = document.createElement('div');
         div.className = `list-item`; div.setAttribute('data-reflection', ""); 
-        div.innerHTML = `<input type="checkbox" class="check-box" onchange="handleTaskCheck(this)"><select class="type-select"><option value="指定">指定</option><option value="自主">自主</option><option value="其他">其他</option></select><select class="name-select">${predefinedTasks.map(t => `<option value="${t}">${t}</option>`).join('')}</select><input type="text" class="progress-input" placeholder="進度描述"><input type="number" class="task-time-input" placeholder="分" min="0" oninput="if(this.value<0)this.value=0;" onchange="calculateTime()"><select class="period-select" onchange="sortTasks(); calculateTime();"><option value="1">上午</option><option value="2">下午</option><option value="3">晚上</option></select><button class="btn-del" onclick="deleteTask(this)">X</button>`;
+        
+        // 綁定了 onchange="handleDomainChange(this)" 以連動 datalist
+        div.innerHTML = `
+            <input type="checkbox" class="check-box" onchange="handleTaskCheck(this)">
+            <select class="type-select"><option value="指定">指定</option><option value="自主">自主</option><option value="其他">其他</option></select>
+            <select class="name-select" onchange="handleDomainChange(this); calculateTime();">${predefinedTasks.map(t => `<option value="${t}">${t}</option>`).join('')}</select>
+            <input type="text" class="progress-input" placeholder="下拉或自填">
+            <input type="number" class="task-time-input" placeholder="分" min="0" oninput="if(this.value<0)this.value=0;" onchange="calculateTime()">
+            <select class="period-select" onchange="sortTasks(); calculateTime();">
+                <option value="1">上午</option><option value="2">下午</option><option value="3">晚上</option>
+            </select>
+            <button class="btn-del" onclick="deleteTask(this)">X</button>
+        `;
         document.getElementById('list-1').appendChild(div);
         calculateTime();
     }
+
     function deleteTask(btn) { const parent = btn.parentElement; if (parent.classList.contains('completed')) { totalEP = Math.max(0, totalEP - 5); updateEP(); } parent.remove(); calculateTime(); }
     function sortTasks() { const all = document.querySelectorAll('#missionContainer .list-item'); all.forEach(t => document.getElementById('list-' + t.querySelector('.period-select').value).appendChild(t)); }
-    function handleTaskCheck(chk) { const p = chk.parentElement; if(chk.checked) { currentTaskCheckbox = chk; document.getElementById('modalTaskName').innerText = `[${p.querySelector('.type-select').value}] ${p.querySelector('.name-select').value}`; document.getElementById('modalTaskProgress').innerText = p.querySelector('.progress-input').value || "無"; document.getElementById('taskReflection').value = p.getAttribute('data-reflection'); document.getElementById('taskModal').style.display = "flex"; } else { p.classList.remove('completed'); totalEP = Math.max(0, totalEP - 5); updateEP(); calculateTime(); } }
+    
+    function handleTaskCheck(chk) { 
+        const p = chk.parentElement; 
+        if(chk.checked) { 
+            currentTaskCheckbox = chk; 
+            let domainName = p.querySelector('.name-select').value;
+            document.getElementById('modalTaskName').innerText = `[${p.querySelector('.type-select').value}] ${domainName === "選擇領域..." ? "未指定領域" : domainName}`; 
+            document.getElementById('modalTaskProgress').innerText = p.querySelector('.progress-input').value || "無"; 
+            document.getElementById('taskReflection').value = p.getAttribute('data-reflection'); 
+            document.getElementById('taskModal').style.display = "flex"; 
+        } else { 
+            p.classList.remove('completed'); 
+            totalEP = Math.max(0, totalEP - 5); 
+            updateEP(); 
+            calculateTime(); 
+        } 
+    }
+    
     function cancelTask() { if(currentTaskCheckbox) currentTaskCheckbox.checked = false; document.getElementById('taskModal').style.display = "none"; }
     function submitTask() { let btn = document.getElementById('btnSubmitTask'); btn.innerText = "紀錄中..."; setTimeout(() => { currentTaskCheckbox.parentElement.classList.add('completed'); currentTaskCheckbox.parentElement.setAttribute('data-reflection', document.getElementById('taskReflection').value); document.getElementById('taskModal').style.display = "none"; totalEP += 5; updateEP(); calculateTime(); btn.innerText = "紀錄完成並獲取 5 EP"; }, 800); }
+    
     function addNewExchange() { const div = document.createElement('div'); div.className = `list-item exchange-item`; div.innerHTML = `<input type="checkbox" class="ex-check-box" onchange="handleExchangeCheck(this)"><input type="text" class="progress-input ex-name" placeholder="兌換項目"><input type="number" class="task-time-input ex-cost" placeholder="需 EP" style="width:60px;" min="0" oninput="if(this.value<0)this.value=0;"><button class="btn-del" onclick="deleteExchange(this)">X</button>`; document.getElementById('exchangeContainer').appendChild(div); }
     function deleteExchange(btn) { const p = btn.parentElement; if (p.classList.contains('completed')) { totalEP += parseInt(p.querySelector('.ex-cost').value) || 0; updateEP(); } p.remove(); }
-    function handleExchangeCheck(chk) { const p = chk.parentElement; let cost = parseInt(p.querySelector('.ex-cost').value) || 0; if(chk.checked) { if(cost > totalEP) { alert("EP 餘額不足！"); chk.checked = false; return; } totalEP -= cost; p.classList.add('completed'); } else { totalEP += cost; p.classList.remove('completed'); } updateEP(); }
+    function handleExchangeCheck(chk) { const p = chk.parentElement; let cost = parseInt(p.querySelector('.ex-cost').value) || 0; if(chk.checked) { if(cost > totalEP) { alert("科學家，我們的 EP 餘額不足喔！"); chk.checked = false; return; } totalEP -= cost; p.classList.add('completed'); } else { totalEP += cost; p.classList.remove('completed'); } updateEP(); }
     function updateEP() { document.getElementById('epScore').innerText = totalEP; }
 </script>
 
