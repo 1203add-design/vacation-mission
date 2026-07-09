@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>假日實驗室 v13.1</title>
+    <style>
+        :root {
+            --primary: #2d3436;
+            --morning-bg: #ffeaa7; --morning-text: #d35400;
+            --afternoon-bg: #74b9ff; --afternoon-text: #0984e3;
+            --evening-bg: #a29bfe; --evening-text: #6c5ce7;
+            --ep-color: #f1c40f;
+            --bg-pattern: #f0f4f8;
+        }
+
+        body { 
+            font-family: 'Segoe UI', '微軟正黑體', sans-serif; 
+            background-color: var(--bg-pattern);
+            background-image: radial-gradient(#dfe6e9 2px, transparent 2px);
+            background-size: 20px 20px;
+            margin: 0; padding: 20px; padding-bottom: 120px; 
+            color: var(--primary); user-select: none;
+        }
+
+        .container { 
+            max-width: 850px; margin: 0 auto; background: rgba(255, 255, 255, 0.95); 
+            padding: 25px; border-radius: 25px; box-shadow: 0 15px 35px rgba(0,0,0,0.1); border: 4px solid #fff;
+        }
+
+        /* 導覽列分頁標籤 */
+        .tab-nav { display: flex; gap: 10px; margin-bottom: 20px; justify-content: center; }
+        .tab-btn { padding: 10px 20px; border-radius: 12px; font-weight: bold; font-size: 1.1rem; cursor: pointer; border: 2px solid #dfe6e9; background: #f1f2f6; color: #636e72; transition: 0.3s; }
+        .tab-btn.active { background: #00cec9; color: white; border-color: #00b894; box-shadow: 0 4px 10px rgba(0,184,148,0.2); }
+
+        .header-panel { text-align: center; padding-bottom: 5px; margin-bottom: 15px; }
+        .header-panel h1 { margin: 0; font-size: 2rem; color: #2d3436; text-shadow: 2px 2px 0px #dfe6e9; letter-spacing: 2px; }
+        
+        .quote-box {
+            height: 40px; display: flex; justify-content: center; align-items: center;
+            font-size: 1rem; font-weight: bold; color: #00b894; margin-top: 10px; margin-bottom: 5px;
+            text-align: center; line-height: 1.3;
+        }
+        .fade-text { animation: fadeInOut 10s infinite; }
+        @keyframes fadeInOut { 0%, 100% { opacity: 0; transform: translateY(5px); } 10%, 90% { opacity: 1; transform: translateY(0); } }
+
+        .time-config { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 15px; justify-content: center; }
+        .time-capsule { background: white; padding: 8px 12px; border-radius: 12px; text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.05); border: 2px solid transparent; width: 90px; }
+        .t-morning { background: var(--morning-bg); color: var(--morning-text); border-color: #ffeaa7; }
+        .t-afternoon { background: var(--afternoon-bg); color: white; border-color: #74b9ff; }
+        .t-evening { background: var(--evening-bg); color: white; border-color: #a29bfe; }
+        .time-label { font-weight: 800; font-size: 0.85rem; margin-bottom: 3px; display: block; }
+        .time-inputs-row { display: flex; align-items: center; gap: 3px; }
+        .time-input { width: 32px; padding: 3px; text-align: center; border: none; border-radius: 6px; font-weight: bold; font-size: 1rem; background: rgba(255,255,255,0.6); box-shadow: inset 0 2px 4px rgba(0,0,0,0.1); }
+        
+        .monitor-panel { margin-bottom: 20px; position: sticky; top: 0; z-index: 10; background: rgba(255, 255, 255, 0.95); padding: 10px 0; backdrop-filter: blur(5px); border-bottom: 1px solid rgba(0,0,0,0.05); margin-left: -25px; margin-right: -25px; padding-left: 25px; padding-right: 25px; border-radius: 0 0 15px 15px; }
+        .total-time-text { text-align: center; margin-bottom: 5px; font-weight: bold; color:#636e72; font-size: 0.9rem; }
+        .bar-container { height: 40px; background: #dfe6e9; border-radius: 20px; overflow: hidden; display: flex; position: relative; border: 4px solid #fff; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+        .bar-tasks { height: 100%; background: linear-gradient(135deg, #74b9ff, #0984e3); width: 0%; transition: 0.6s; display: flex; align-items: center; justify-content: center; color: white; font-size: 0.95rem; font-weight: bold; overflow: hidden; white-space: nowrap; }
+        .bar-free { height: 100%; background: linear-gradient(135deg, #55efc4, #00b894); width: 100%; transition: 0.6s; display: flex; align-items: center; justify-content: center; color: #2d3436; font-weight: bold; font-size: 0.95rem; overflow: hidden; white-space: nowrap; }
+
+        .period-section { margin-bottom: 15px; border-radius: 15px; padding: 15px 15px 5px 15px; transition: all 0.3s ease; }
+        .section-1 { background: linear-gradient(to bottom right, #fffdf2, #fff9e6); border: 2px dashed #ffeaa7; }
+        .section-2 { background: linear-gradient(to bottom right, #f4fbff, #e9f5ff); border: 2px dashed #74b9ff; }
+        .section-3 { background: linear-gradient(to bottom right, #f8f7ff, #f1f0ff); border: 2px dashed #a29bfe; }
+        .section-title-period { font-size: 1.1rem; font-weight: bold; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between; }
+        .title-left { display: flex; align-items: center; gap: 8px; }
+        .title-c1 { color: #d35400; }
+        .title-c2 { color: #0984e3; }
+        .title-c3 { color: #6c5ce7; }
+        .period-rem { font-size: 0.85rem; padding: 4px 10px; border-radius: 12px; font-weight: bold; transition: all 0.3s ease; background: #dfe6e9; color: #636e72; }
+
+        .grid-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 10px; min-height: 5px; }
+        .list-item { display: flex; align-items: center; gap: 8px; padding: 12px 15px; background: #fff; border-radius: 12px; transition: all 0.4s ease; border-left: 6px solid #b2bec3; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .list-item.completed { opacity: 0.6; background: #f1f2f6; border-left-color: #b2bec3 !important; transform: scale(0.99); }
+        .list-item.completed input[type="text"], .list-item.completed input[type="number"], .list-item.completed select { text-decoration: line-through; color: #b2bec3; pointer-events: none; }
+        .section-1 .list-item { border-left-color: #fdcb6e; } 
+        .section-2 .list-item { border-left-color: #0984e3; } 
+        .section-3 .list-item { border-left-color: #6c5ce7; } 
+        .exchange-item { border-left-color: #e17055 !important; background: #fffaf0; }
+
+        .check-box { width: 22px; height: 22px; cursor: pointer; accent-color: #00b894; flex-shrink: 0; }
+        .ex-check-box { width: 22px; height: 22px; cursor: pointer; accent-color: #e17055; flex-shrink: 0; }
+        .type-select { width: 75px; padding: 6px; border-radius: 8px; border: 1px solid #dfe6e9; font-weight: bold; font-size: 0.9rem; background: #f8f9fa; color: #2d3436; }
+        .name-select { width: 130px; padding: 6px; border-radius: 8px; border: 1px solid #dfe6e9; font-weight: bold; font-size: 0.9rem; }
+        .progress-input { flex-grow: 1; padding: 6px 10px; border-radius: 8px; border: 1px solid #dfe6e9; font-size: 0.95rem; }
+        .task-time-input { width: 55px; padding: 6px; text-align: center; border: 1px solid #dfe6e9; border-radius: 8px; font-weight: bold; font-size: 0.95rem; color: #d63031; }
+        .period-select { width: 70px; padding: 6px; border-radius: 8px; border: 1px solid #dfe6e9; font-weight: bold; font-size: 0.9rem; background: #f1f2f6; color: #636e72; }
+        .btn-del { background: #ff7675; color: white; border: none; border-radius: 8px; width: 30px; height: 30px; cursor: pointer; font-weight: bold; flex-shrink: 0; }
+
+        .add-btn { background: linear-gradient(to right, #00b894, #00cec9); color: white; border: none; padding: 12px; border-radius: 12px; font-weight: bold; cursor: pointer; width: 100%; font-size: 1.1rem; box-shadow: 0 4px 10px rgba(0,184,148,0.3); transition: 0.2s; margin-bottom: 25px; }
+        .add-btn-ex { background: linear-gradient(to right, #e17055, #fab1a0); box-shadow: 0 4px 10px rgba(225,112,85,0.3); margin-top: 10px; }
+        .section-title { font-size: 1.15rem; color: #d35400; border-bottom: 2px dashed #ffda79; padding-bottom: 5px; margin-bottom: 10px; font-weight: bold; display: flex; align-items: center; gap: 8px; }
+
+        .ep-footer { position: fixed; bottom: 0; left: 0; width: 100%; height: 70px; background: #2d3436; color: white; box-shadow: 0 -5px 20px rgba(0,0,0,0.2); display: flex; justify-content: center; align-items: center; z-index: 1000; border-top: 4px solid #636e72; }
+        .ep-content { display: flex; align-items: center; justify-content: center; gap: 5px; background: rgba(255, 255, 255, 0.15); padding: 5px 30px; border-radius: 50px; border: 1px solid rgba(255, 255, 255, 0.3); }
+        .ep-label { color:#bdc3c7; font-size: 0.9rem; letter-spacing: 1px; font-weight: bold; }
+        .ep-score { font-size: 2rem; font-weight: 800; color: var(--ep-color); text-shadow: 0 0 15px rgba(241, 196, 15, 0.8); }
+
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); justify-content: center; align-items: center; z-index: 2000; backdrop-filter: blur(3px); }
+        .modal-content { background: white; padding: 25px; border-radius: 20px; width: 85%; max-width: 400px; display: flex; flex-direction: column; gap: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); border: 4px solid #00cec9; }
+        .modal-content h3 { margin: 0; color: #00b894; border-bottom: 2px solid #f1f2f6; padding-bottom: 10px; }
+        .modal-content textarea { width: 92%; padding: 12px; height: 100px; border: 1px solid #dfe6e9; border-radius: 8px; font-size: 1.05rem; resize: none; font-family: inherit; }
+        .btn-submit-task { background: #00b894; color: white; border: none; padding: 12px; border-radius: 8px; font-weight: bold; font-size: 1.1rem; cursor: pointer; }
+        .btn-cancel { background: #b2bec3; color: white; border: none; padding: 8px; border-radius: 8px; font-weight: bold; cursor: pointer; }
+
+        /* 設定頁樣式更新 */
+        .domain-setting-block { background: #fff; padding: 18px; border-radius: 12px; margin-bottom: 15px; border: 2px solid #dfe6e9; box-shadow: 0 4px 10px rgba(0,0,0,0.02); }
+        .domain-title { color: #0984e3; margin-top: 0; margin-bottom: 12px; border-bottom: 2px dashed #74b9ff; padding-bottom: 8px; display: flex; align-items: center; gap: 8px; font-size: 1.2rem; }
+        .settings-input-group { display: flex; gap: 10px; margin-bottom: 15px; }
+        .settings-input-group input { flex-grow: 1; padding: 10px; border: 1px solid #dfe6e9; border-radius: 8px; font-size: 1rem; }
+        .settings-input-group button { background: #00cec9; color: white; border: none; padding: 10px 15px; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.2s; }
+        .settings-input-group button:active { transform: scale(0.95); }
+        .settings-list { list-style: none; padding: 0; margin: 0; }
+        .settings-list li { display: flex; justify-content: space-between; align-items: center; padding: 10px 12px; background: #f1f2f6; border-radius: 8px; margin-bottom: 8px; font-weight: bold; color: #2d3436; border-left: 4px solid #b2bec3; }
+        .settings-list li button { background: #ff7675; color: white; border: none; border-radius: 6px; padding: 5px 12px; cursor: pointer; font-weight: bold; transition: 0.2s; }
+        .settings-list li button:active { transform: scale(0.9); }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="tab-nav">
+        <div class="tab-btn active" onclick="switchTab('view-main', this)">🏠 主控台</div>
+        <div class="tab-btn" onclick="switchTab('view-settings', this)">⚙️ 設定頁</div>
+    </div>
+
+    <div id="view-main">
+        <div class="header-panel">
+            <h1>🧪 假日實驗室</h1>
+            <div class="quote-box"><span id="quoteText" class="fade-text">Focus is your superpower!</span></div>
+        </div>
+
+        <div class="time-config">
+            <div class="time-capsule t-morning"><span class="time-label">🌅 早上</span>
+                <div class="time-inputs-row"><input type="number" class="time-input" id="t_m_h" min="0" oninput="if(this.value<0)this.value=0;" onchange="calculateTime()"> : <input type="number" class="time-input" id="t_m_m" min="0" oninput="if(this.value<0)this.value=0;" onchange="calculateTime()"></div>
+            </div>
+            <div class="time-capsule t-afternoon"><span class="time-label">☀️ 下午</span>
+                <div class="time-inputs-row"><input type="number" class="time-input" id="t_a_h" min="0" oninput="if(this.value<0)this.value=0;" onchange="calculateTime()"> : <input type="number" class="time-input" id="t_a_m" min="0" oninput="if(this.value<0)this.value=0;" onchange="calculateTime()"></div>
+            </div>
+            <div class="time-capsule t-evening"><span class="time-label">🌙 晚上</span>
+                <div class="time-inputs-row"><input type="number" class="time-input" id="t_e_h" min="0" oninput="if(this.value<0)this.value=0;" onchange="calculateTime()"> : <input type="number" class="time-input" id="t_e_m" min="0" oninput="if(this.value<0)this.value=0;" onchange="calculateTime()"></div>
+            </div>
+        </div>
+
+        <div class="monitor-panel">
+            <div class="total-time-text" id="totalTimeText">等待輸入時間資源...</div>
+            <div class="bar-container">
+                <div class="bar-tasks" id="taskBar"></div>
+                <div class="bar-free" id="freeBar"></div>
+            </div>
+        </div>
+
+        <div id="missionContainer">
+            <div class="period-section section-1"><div class="section-title-period title-c1"><div class="title-left">🌅 上午實驗區</div><span id="rem-1" class="period-rem">未設定時間</span></div><div id="list-1" class="grid-list"></div></div>
+            <div class="period-section section-2"><div class="section-title-period title-c2"><div class="title-left">☀️ 下午實驗區</div><span id="rem-2" class="period-rem">未設定時間</span></div><div id="list-2" class="grid-list"></div></div>
+            <div class="period-section section-3"><div class="section-title-period title-c3"><div class="title-left">🌙 晚上實驗區</div><span id="rem-3" class="period-rem">未設定時間</span></div><div id="list-3" class="grid-list"></div></div>
+        </div>
+        
+        <button class="add-btn" onclick="addNewTask()">➕ 增加新實驗任務</button>
+        <div class="section-title">🎁 能量兌換站</div>
+        <div id="exchangeContainer" class="grid-list"></div>
+        <button class="add-btn add-btn-ex" onclick="addNewExchange()">➕ 增加兌換項目</button>
+    </div>
+
+    <div id="view-settings" style="display: none;">
+        <div class="header-panel">
+            <h1>⚙️ 系統設定中心</h1>
+            <p style="color:#636e72; font-weight:bold; font-size:1.1rem;">在此管理「內容描述」的預設下拉選項</p>
+        </div>
+        
+        <div id="settings-container"></div>
+    </div>
+</div>
+
+<div class="ep-footer"><div class="ep-content"><span class="ep-label">總累積 EP</span><span class="ep-score" id="epScore">0</span></div></div>
+
+<div class="modal" id="taskModal"><div class="modal-content"><h3>✅ 實驗發現與紀錄</h3><p style="font-weight:bold; color:#2d3436; margin:0;">領域：<span id="modalTaskName"></span></p><p style="font-size:0.9rem; color:#636e72; margin-top:-5px;">內容：<span id="modalTaskProgress"></span></p><textarea id="taskReflection" placeholder="把你的心得、發現或遇到的挑戰記錄下來吧..."></textarea><button class="btn-submit-task" id="btnSubmitTask" onclick="submitTask()">紀錄完成並獲取 5 EP</button><button class="btn-cancel" onclick="cancelTask()">先不要打卡</button></div></div>
+
+<div id="datalists-container"></div>
+
+<script>
+    let totalEP = 0;
+    let currentTaskCheckbox = null;
+    
+    // 七大核心領域，其他不包含在此設定中
+    const domains = ["語文/閱讀", "數學/邏輯", "社會/人文", "自然/科技", "藝術", "健康/體育", "綜合"];
+    const predefinedTasks = ["選擇領域...", ...domains, "其他"];
+    
+    // 將每個領域的選項分開管理
+    let domainOptionsData = {
+        "語文/閱讀": ["閱讀第1章", "背誦課文", "中/英文習作"],
+        "數學/邏輯": ["完成數學習作", "解謎挑戰", "計算練習"],
+        "社會/人文": ["看故事書", "查閱歷史地圖"],
+        "自然/科技": ["自然觀察日記", "看科普影片", "程式練習"],
+        "藝術": ["樂器練習", "繪畫創作", "摺紙/手作"],
+        "健康/體育": ["跳繩", "跑步", "打球", "拉筋伸展"],
+        "綜合": ["專題研究", "整理房間", "準備明日物品"]
+    };
+
+    const quotes = ["Focus is your superpower!\n專注就是你的超能力！", "Mistakes are just data.\n錯誤只是實驗數據。", "You are evolving every day!\n你每天都在進化中！", "Keep exploring, Scientist!\n繼續探索吧，科學家！", "Every effort counts!\n每一份努力都算數！", "Level up your brain!\n讓你的大腦升級吧！", "Stay curious, stay wild!\n保持好奇，保持熱血！", "Challenge accepted!\n接受挑戰，你可以的！"];
+    let qIdx = 0;
+
+    window.onload = function() { 
+        renderSettings(); 
+        rotateQuotes(); 
+        addNewTask(); 
+        addNewExchange(); 
+        calculateTime(); 
+        updateEP(); 
+    };
+    
+    function switchTab(viewId, btnElement) {
+        document.getElementById('view-main').style.display = 'none';
+        document.getElementById('view-settings').style.display = 'none';
+        document.getElementById(viewId).style.display = 'block';
+        document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+        btnElement.classList.add('active');
+    }
+
+    // === 設定頁與 Datalist 渲染邏輯 ===
+    function renderSettings() {
+        const container = document.getElementById('settings-container');
+        container.innerHTML = '';
+        
+        domains.forEach((dom, dIdx) => {
+            let html = `
+                <div class="domain-setting-block">
+                    <h3 class="domain-title">📌 ${dom}</h3>
+                    <div class="settings-input-group">
+                        <input type="text" id="new-opt-${dIdx}" placeholder="輸入新的內容描述">
+                        <button onclick="addDomainOption('${dom}', ${dIdx})">➕ 新增</button>
+                    </div>
+                    <ul class="settings-list">
+            `;
+            domainOptionsData[dom].forEach((opt, oIdx) => {
+                html += `<li>${opt} <button onclick="removeDomainOption('${dom}', ${oIdx})">刪除</button></li>`;
+            });
+            html += `</ul></div>`;
+            container.innerHTML += html;
+        });
+        
+        // 同步更新隱藏的 datalist，供主控台使用
+        renderDatalists();
+    }
+
+    function addDomainOption(domain, dIdx) {
+        const input = document.getElementById(`new-opt-${dIdx}`);
+        const val = input.value.trim();
+        if(val && !domainOptionsData[domain].includes(val)) {
+            domainOptionsData[domain].push(val);
+            renderSettings();
+        }
+    }
+
+    function removeDomainOption(domain, oIdx) {
+        domainOptionsData[domain].splice(oIdx, 1);
+        renderSettings();
+    }
+
+    function renderDatalists() {
+        const dlContainer = document.getElementById('datalists-container');
+        dlContainer.innerHTML = '';
+        domains.forEach((dom, dIdx) => {
+            let html = `<datalist id="dl-opt-${dIdx}">`;
+            domainOptionsData[dom].forEach(opt => { html += `<option value="${opt}">`; });
+            html += `</datalist>`;
+            dlContainer.innerHTML += html;
+        });
+    }
+
+    // 當任務選擇領域時，自動切換對應的 datalist 內容
+    function handleDomainChange(selectEl) {
+        const domain = selectEl.value;
+        const inputEl = selectEl.parentElement.querySelector('.progress-input');
+        const dIdx = domains.indexOf(domain);
+        
+        if (dIdx !== -1) {
+            inputEl.setAttribute('list', 'dl-opt-' + dIdx);
+            inputEl.value = ''; // 切換領域時清空原本的內容避免錯亂
+        } else {
+            inputEl.removeAttribute('list'); // 選擇「其他」或未選擇時，移除自動完成
+            inputEl.value = '';
+        }
+    }
+
+    function rotateQuotes() { const el = document.getElementById('quoteText'); el.innerText = quotes[qIdx]; qIdx = (qIdx + 1) % quotes.length; setTimeout(rotateQuotes, 10000); }
+
+    function calculateTime() {
+        const hInps = [document.getElementById('t_m_h'), document.getElementById('t_a_h'), document.getElementById('t_e_h')];
+        const mInps = [document.getElementById('t_m_m'), document.getElementById('t_a_m'), document.getElementById('t_e_m')];
+        let pTotal = hInps.map((h, i) => (Math.max(0, parseInt(h.value)) || 0) * 60 + (Math.max(0, parseInt(mInps[i].value)) || 0));
+        let totalMin = pTotal.reduce((a, b) => a + b, 0);
+        let pUsed = [0, 0, 0], usedMin = 0;
+        document.querySelectorAll('.task-time-input').forEach(input => { 
+            if(!input.parentElement.classList.contains('exchange-item')) {
+                let time = Math.max(0, parseInt(input.value)) || 0;
+                usedMin += time;
+                let period = parseInt(input.parentElement.querySelector('.period-select').value) || 1;
+                pUsed[period-1] += time;
+            }
+        });
+        document.getElementById('totalTimeText').innerText = totalMin > 0 ? `總時間資源：${Math.floor(totalMin/60)}小時 ${totalMin%60}分` : "請輸入上方膠囊時間...";
+        let usedPct = totalMin > 0 ? Math.min(100, (usedMin / totalMin) * 100) : 0;
+        document.getElementById('taskBar').style.width = `${usedPct}%`;
+        document.getElementById('freeBar').style.width = `${100 - usedPct}%`;
+        
+        if(totalMin - usedMin < 0) {
+            document.getElementById('taskBar').innerText = `已排程: ${usedMin}分 (超時 ${Math.abs(totalMin - usedMin)}分)`;
+            document.getElementById('taskBar').style.background = "linear-gradient(135deg, #ff7675, #d63031)";
+            document.getElementById('freeBar').innerText = "";
+        } else {
+            document.getElementById('taskBar').innerText = usedPct > 5 ? `已排程: ${usedMin}分` : '';
+            document.getElementById('taskBar').style.background = "linear-gradient(135deg, #74b9ff, #0984e3)";
+            document.getElementById('freeBar').innerText = totalMin - usedMin > 0 ? `放空: ${totalMin - usedMin}分` : '';
+            document.getElementById('freeBar').style.background = "linear-gradient(135deg, #55efc4, #00b894)";
+        }
+
+        for(let i=1; i<=3; i++) {
+            let rem = pTotal[i-1] - pUsed[i-1], el = document.getElementById(`rem-${i}`);
+            if(pTotal[i-1] === 0 && pUsed[i-1] === 0) { el.innerText = "未設定時間"; el.style.background = "#dfe6e9"; el.style.color = "#636e72"; }
+            else if (rem < 0) { el.innerText = `⚠️ 超時 ${Math.abs(rem)} 分`; el.style.background = "#ff7675"; el.style.color = "#fff"; }
+            else { el.innerText = `放空 ${rem} 分`; el.style.background = "#55efc4"; el.style.color = "#2d3436"; }
+        }
+    }
+
+    function addNewTask() {
+        const div = document.createElement('div');
+        div.className = `list-item`; div.setAttribute('data-reflection', ""); 
+        
+        // 綁定了 onchange="handleDomainChange(this)" 以連動 datalist
+        div.innerHTML = `
+            <input type="checkbox" class="check-box" onchange="handleTaskCheck(this)">
+            <select class="type-select"><option value="指定">指定</option><option value="自主">自主</option><option value="其他">其他</option></select>
+            <select class="name-select" onchange="handleDomainChange(this); calculateTime();">${predefinedTasks.map(t => `<option value="${t}">${t}</option>`).join('')}</select>
+            <input type="text" class="progress-input" placeholder="下拉或自填">
+            <input type="number" class="task-time-input" placeholder="分" min="0" oninput="if(this.value<0)this.value=0;" onchange="calculateTime()">
+            <select class="period-select" onchange="sortTasks(); calculateTime();">
+                <option value="1">上午</option><option value="2">下午</option><option value="3">晚上</option>
+            </select>
+            <button class="btn-del" onclick="deleteTask(this)">X</button>
+        `;
+        document.getElementById('list-1').appendChild(div);
+        calculateTime();
+    }
+
+    function deleteTask(btn) { const parent = btn.parentElement; if (parent.classList.contains('completed')) { totalEP = Math.max(0, totalEP - 5); updateEP(); } parent.remove(); calculateTime(); }
+    function sortTasks() { const all = document.querySelectorAll('#missionContainer .list-item'); all.forEach(t => document.getElementById('list-' + t.querySelector('.period-select').value).appendChild(t)); }
+    
+    function handleTaskCheck(chk) { 
+        const p = chk.parentElement; 
+        if(chk.checked) { 
+            currentTaskCheckbox = chk; 
+            let domainName = p.querySelector('.name-select').value;
+            document.getElementById('modalTaskName').innerText = `[${p.querySelector('.type-select').value}] ${domainName === "選擇領域..." ? "未指定領域" : domainName}`; 
+            document.getElementById('modalTaskProgress').innerText = p.querySelector('.progress-input').value || "無"; 
+            document.getElementById('taskReflection').value = p.getAttribute('data-reflection'); 
+            document.getElementById('taskModal').style.display = "flex"; 
+        } else { 
+            p.classList.remove('completed'); 
+            totalEP = Math.max(0, totalEP - 5); 
+            updateEP(); 
+            calculateTime(); 
+        } 
+    }
+    
+    function cancelTask() { if(currentTaskCheckbox) currentTaskCheckbox.checked = false; document.getElementById('taskModal').style.display = "none"; }
+    function submitTask() { let btn = document.getElementById('btnSubmitTask'); btn.innerText = "紀錄中..."; setTimeout(() => { currentTaskCheckbox.parentElement.classList.add('completed'); currentTaskCheckbox.parentElement.setAttribute('data-reflection', document.getElementById('taskReflection').value); document.getElementById('taskModal').style.display = "none"; totalEP += 5; updateEP(); calculateTime(); btn.innerText = "紀錄完成並獲取 5 EP"; }, 800); }
+    
+    function addNewExchange() { const div = document.createElement('div'); div.className = `list-item exchange-item`; div.innerHTML = `<input type="checkbox" class="ex-check-box" onchange="handleExchangeCheck(this)"><input type="text" class="progress-input ex-name" placeholder="兌換項目"><input type="number" class="task-time-input ex-cost" placeholder="需 EP" style="width:60px;" min="0" oninput="if(this.value<0)this.value=0;"><button class="btn-del" onclick="deleteExchange(this)">X</button>`; document.getElementById('exchangeContainer').appendChild(div); }
+    function deleteExchange(btn) { const p = btn.parentElement; if (p.classList.contains('completed')) { totalEP += parseInt(p.querySelector('.ex-cost').value) || 0; updateEP(); } p.remove(); }
+    function handleExchangeCheck(chk) { const p = chk.parentElement; let cost = parseInt(p.querySelector('.ex-cost').value) || 0; if(chk.checked) { if(cost > totalEP) { alert("科學家，我們的 EP 餘額不足喔！"); chk.checked = false; return; } totalEP -= cost; p.classList.add('completed'); } else { totalEP += cost; p.classList.remove('completed'); } updateEP(); }
+    function updateEP() { document.getElementById('epScore').innerText = totalEP; }
+</script>
+
+</body>
+</html>
