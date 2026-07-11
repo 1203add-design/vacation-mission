@@ -3,32 +3,145 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>假日實驗室 v15.5</title>
+    <title>假日實驗室 v16.6 - 敏捷導航版</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Urbanist:wght@400;500;700&family=Noto+Sans+TC:wght@400;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --primary: #2d3436; --morning-bg: #ffeaa7; --morning-text: #d35400;
-            --afternoon-bg: #74b9ff; --afternoon-text: #0984e3; --evening-bg: #a29bfe; --evening-text: #6c5ce7;
-            --ep-color: #f1c40f; --bg-pattern: #f0f4f8;
+            --primary: #2d3436; 
+            --morning-bg: #ffeaa7; --morning-text: #d35400;
+            --afternoon-bg: #74b9ff; --afternoon-text: #0984e3; 
+            --evening-bg: #a29bfe; --evening-text: #6c5ce7;
+            --accent: #00cec9; --success: #00b894; --warning: #fab1a0;
+            --ep-color: #f1c40f; --bg-pattern: #f8fafc;
         }
 
-        body { font-family: 'Segoe UI', '微軟正黑體', sans-serif; background-color: var(--bg-pattern); background-image: radial-gradient(#dfe6e9 2px, transparent 2px); background-size: 20px 20px; margin: 0; padding: 20px; padding-bottom: 120px; color: var(--primary); user-select: none; }
-        .container { max-width: 850px; margin: 0 auto; background: rgba(255, 255, 255, 0.95); padding: 25px; border-radius: 25px; box-shadow: 0 15px 35px rgba(0,0,0,0.1); border: 4px solid #fff; }
+        body { 
+            font-family: 'Urbanist', 'Noto Sans TC', sans-serif; 
+            background-color: var(--bg-pattern); 
+            margin: 0; padding: 0; color: var(--primary); 
+            user-select: none;
+            padding-bottom: 100px;
+        }
 
-        .tab-nav { display: flex; gap: 10px; margin-bottom: 20px; justify-content: center; flex-wrap: wrap; }
-        .tab-btn { padding: 10px 20px; border-radius: 12px; font-weight: bold; font-size: 1.1rem; cursor: pointer; border: 2px solid #dfe6e9; background: #f1f2f6; color: #636e72; transition: 0.3s; }
-        .tab-btn.active { background: #00cec9; color: white; border-color: #00b894; box-shadow: 0 4px 10px rgba(0,184,148,0.2); }
+        /* 1. 全域頂部導覽列固定 (Sticky Header) */
+        .tab-nav { 
+            position: sticky; top: 0; z-index: 1000; 
+            display: flex; gap: 12px; justify-content: center; 
+            padding: 12px; background: rgba(255, 255, 255, 0.88); 
+            backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.02);
+        }
 
-        .header-panel { text-align: center; padding-bottom: 5px; margin-bottom: 10px; }
-        .header-panel h1 { margin: 0; font-size: 2rem; color: #2d3436; text-shadow: 2px 2px 0px #dfe6e9; letter-spacing: 2px; }
-        .quote-box { height: 40px; display: flex; justify-content: center; align-items: center; font-size: 1.05rem; font-weight: bold; color: #00b894; margin-top: 5px; margin-bottom: 5px; text-align: center; line-height: 1.3; }
+        .tab-btn { 
+            padding: 10px 20px; border-radius: 50px; font-weight: 700; 
+            font-size: 1.05rem; cursor: pointer; border: 2px solid transparent; 
+            background: #f1f2f6; color: #636e72; transition: all 0.3s ease;
+        }
 
-        .date-navigator { display: flex; justify-content: space-between; align-items: center; background: #fff; padding: 10px 15px; border-radius: 15px; border: 2px solid #dfe6e9; margin-bottom: 15px; }
-        .btn-nav-date { background: #f1f2f6; border: none; padding: 8px 15px; border-radius: 8px; font-weight: bold; color: #2d3436; cursor: pointer; transition: 0.2s; }
-        .btn-nav-date:hover { background: #dfe6e9; }
-        .current-date-title { font-size: 1.3rem; font-weight: 900; color: #0984e3; margin: 0; }
-        .btn-copy-yesterday { background: #ffeaa7; color: #d35400; border: none; padding: 8px 12px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 0.9rem; box-shadow: 0 2px 5px rgba(0,0,0,0.05); transition: 0.2s; margin-top: 5px; }
-        .btn-copy-yesterday:active { transform: scale(0.95); }
+        .tab-btn.active { 
+            background: var(--accent); color: white; 
+            box-shadow: 0 6px 15px rgba(0,206,201,0.25); transform: translateY(-1px);
+        }
 
+        .main-wrapper { max-width: 950px; margin: 20px auto; padding: 0 15px; }
+        .container { 
+            background: rgba(255, 255, 255, 0.98); 
+            padding: 25px; border-radius: 25px; 
+            box-shadow: 0 15px 40px rgba(0,0,0,0.04); border: 1px solid #fff;
+            margin-bottom: 25px;
+        }
+
+        /* 2. 每日主控台面板 */
+        .quote-box { 
+            min-height: 45px; text-align: center; color: var(--success); 
+            font-weight: 700; font-size: 1.1rem; margin-bottom: 15px;
+            white-space: pre-line;
+        }
+
+        .date-navigator { 
+            display: flex; justify-content: space-between; align-items: center; 
+            background: #fdfdfd; padding: 12px 20px; border-radius: 20px; 
+            border: 2px solid #f1f2f6; margin-bottom: 20px;
+        }
+
+        .current-date-title { font-size: 1.35rem; font-weight: 900; color: #0984e3; margin: 0; }
+        
+        .time-config { display: flex; gap: 12px; margin-bottom: 20px; justify-content: center; flex-wrap: wrap; }
+        .time-capsule { 
+            display: flex; align-items: center; gap: 8px;
+            padding: 8px 16px; border-radius: 50px; 
+            box-shadow: 0 4px 10px rgba(0,0,0,0.02); font-weight: bold; font-size: 0.95rem;
+        }
+        .time-inputs-row { display: flex; align-items: center; gap: 3px; }
+        .time-capsule input { width: 30px; border: none; text-align: center; background: rgba(255,255,255,0.5); border-radius: 5px; font-weight: bold; padding: 2px; font-size: 0.95rem; }
+
+        .monitor-panel { margin-bottom: 25px; }
+        .total-time-text { text-align: center; margin-bottom: 5px; font-weight: bold; color: #636e72; font-size: 0.9rem; }
+        .bar-container { 
+            height: 40px; background: #dfe6e9; border-radius: 20px; 
+            overflow: hidden; display: flex; position: relative; border: 4px solid #fff; box-shadow: 0 6px 15px rgba(0,0,0,0.05); 
+        }
+        .bar-tasks { height: 100%; background: linear-gradient(135deg, #74b9ff, #0984e3); width: 0%; transition: 0.6s; display: flex; align-items: center; justify-content: center; color: white; font-size: 0.9rem; font-weight: bold; overflow: hidden; white-space: nowrap; }
+        .bar-free { height: 100%; background: linear-gradient(135deg, #55efc4, #00b894); width: 100%; transition: 0.6s; display: flex; align-items: center; justify-content: center; color: #2d3436; font-weight: bold; font-size: 0.9rem; overflow: hidden; white-space: nowrap; }
+        
+        .period-section { margin-bottom: 20px; border-radius: 20px; padding: 15px 15px 5px 15px; }
+        .section-1 { background: linear-gradient(to bottom right, #fffdf2, #fff9e6); border: 2px dashed #ffeaa7; }
+        .section-2 { background: linear-gradient(to bottom right, #f4fbff, #e9f5ff); border: 2px dashed #74b9ff; }
+        .section-3 { background: linear-gradient(to bottom right, #f8f7ff, #f1f0ff); border: 2px dashed #a29bfe; }
+        .section-title-period { font-size: 1.1rem; font-weight: bold; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between; }
+        .period-rem { font-size: 0.85rem; padding: 4px 10px; border-radius: 12px; font-weight: bold; }
+
+        .grid-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 10px; }
+        .list-item { 
+            display: flex; align-items: center; gap: 8px; padding: 10px 12px; 
+            background: #fff; border-radius: 12px; border-left: 6px solid #b2bec3; 
+            box-shadow: 0 2px 6px rgba(0,0,0,0.02); flex-wrap: nowrap;
+        }
+        
+        .list-item.completed { opacity: 0.5; filter: grayscale(0.6); }
+        .list-item.completed input[type="text"], 
+        .list-item.completed input[type="number"], 
+        .list-item.completed select,
+        .list-item.completed textarea { 
+            text-decoration: line-through; color: #b2bec3; pointer-events: none; 
+        }
+
+        .list-item.completed .check-box,
+        .list-item.completed .ex-check-box { 
+            pointer-events: auto !important; 
+        }
+
+        .check-box { width: 22px; height: 22px; cursor: pointer; flex-shrink: 0; accent-color: #00b894; }
+        .type-select { width: 68px; background: #f8f9fa; flex-shrink: 0; }
+        .name-select { width: 125px; flex-shrink: 0; }
+        .progress-input { flex: 3; min-width: 110px; } 
+        .task-stage-input { flex: 2; min-width: 90px; border-color: #ffeaa7; } 
+        .task-time-input { width: 52px; text-align: center; color: #d63031; flex-shrink: 0; }
+        .period-select { width: 65px; background: #f1f2f6; color: #636e72; flex-shrink: 0; padding: 6px 4px; }
+        .btn-del { background: #ff7675; color: white; border: none; border-radius: 8px; width: 30px; height: 30px; cursor: pointer; font-weight: bold; flex-shrink: 0; transition: 0.2s; }
+        .btn-del:active { transform: scale(0.9); }
+
+        .proj-container { display: none; align-items: center; gap: 3px; flex-shrink: 0; }
+        .proj-val-input { width: 50px; padding: 6px; border: 1px solid #00cec9; border-radius: 8px; font-weight: bold; color:#0984e3; text-align: center; }
+
+        @media (max-width: 768px) {
+            .list-item { flex-wrap: wrap; padding: 12px; gap: 8px; }
+            .name-select { flex-grow: 1; width: auto; }
+            .progress-input { flex-basis: 100%; order: 3; margin-top: 2px; }
+            .task-stage-input { flex: 1; order: 4; }
+            .proj-container { order: 5; }
+            .task-time-input { order: 6; }
+            .period-select { order: 7; }
+            .btn-del { order: 8; }
+        }
+
+        .ex-check-box { width: 22px; height: 22px; cursor: pointer; flex-shrink: 0; accent-color: #e17055; }
+        .ex-cost { width: 55px; text-align: center; font-size: 0.85rem !important; padding: 6px 4px !important; }
+
+        /* 3. 實驗導航圖 (月曆) */
         .calendar-month-block { background: #fff; border: 2px solid #dfe6e9; border-radius: 15px; padding: 15px; margin-bottom: 20px; }
         .calendar-month-title { font-size: 1.2rem; color: #2d3436; border-bottom: 2px dashed #b2bec3; padding-bottom: 10px; margin-top: 0; margin-bottom: 15px; font-weight: bold; text-align: center; }
         .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; }
@@ -41,127 +154,93 @@
         .cal-day.status-done { background: #e8f8f5; border-color: #00cec9; color: #00b894; }
         .cal-day.active { box-shadow: 0 0 0 3px #fdcb6e; }
 
-        .time-config { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 15px; justify-content: center; }
-        .time-capsule { background: white; padding: 8px 12px; border-radius: 12px; text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.05); border: 2px solid transparent; width: 90px; }
-        .t-morning { background: var(--morning-bg); color: var(--morning-text); border-color: #ffeaa7; }
-        .t-afternoon { background: var(--afternoon-bg); color: white; border-color: #74b9ff; }
-        .t-evening { background: var(--evening-bg); color: white; border-color: #a29bfe; }
-        .time-label { font-weight: 800; font-size: 0.85rem; margin-bottom: 3px; display: block; }
-        .time-inputs-row { display: flex; align-items: center; gap: 3px; }
-        .time-input { width: 32px; padding: 3px; text-align: center; border: none; border-radius: 6px; font-weight: bold; font-size: 1rem; background: rgba(255,255,255,0.6); box-shadow: inset 0 2px 4px rgba(0,0,0,0.1); }
+        /* 4. 看板與後台設定 */
+        .project-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 15px; margin-top: 15px; }
+        .project-card { background: white; border-radius: 18px; padding: 15px; border: 1px solid #f1f2f6; border-left: 6px solid var(--afternoon-text); box-shadow: 0 4px 10px rgba(0,0,0,0.02); }
+        .project-card.achieved { border-color: var(--success); animation: glow 2s infinite; }
+        @keyframes glow { 0%, 100% { box-shadow: 0 0 5px rgba(0,184,148,0.2); } 50% { box-shadow: 0 0 15px rgba(0,184,148,0.4); } }
         
-        .monitor-panel { margin-bottom: 20px; position: sticky; top: 0; z-index: 10; background: rgba(255, 255, 255, 0.95); padding: 10px 0; backdrop-filter: blur(5px); border-bottom: 1px solid rgba(0,0,0,0.05); margin-left: -25px; margin-right: -25px; padding-left: 25px; padding-right: 25px; border-radius: 0 0 15px 15px; }
-        .total-time-text { text-align: center; margin-bottom: 5px; font-weight: bold; color:#636e72; font-size: 0.9rem; }
-        .bar-container { height: 40px; background: #dfe6e9; border-radius: 20px; overflow: hidden; display: flex; position: relative; border: 4px solid #fff; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
-        .bar-tasks { height: 100%; background: linear-gradient(135deg, #74b9ff, #0984e3); width: 0%; transition: 0.6s; display: flex; align-items: center; justify-content: center; color: white; font-size: 0.95rem; font-weight: bold; overflow: hidden; white-space: nowrap; }
-        .bar-free { height: 100%; background: linear-gradient(135deg, #55efc4, #00b894); width: 100%; transition: 0.6s; display: flex; align-items: center; justify-content: center; color: #2d3436; font-weight: bold; font-size: 0.95rem; overflow: hidden; white-space: nowrap; }
+        .fame-card { background: linear-gradient(135deg, #fff9e6, #fff3cd); border: 2px solid #f1c40f; padding: 12px 20px; border-radius: 15px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 10px rgba(241,196,15,0.1); }
+        .fame-title { color: #d35400; font-size: 1.15rem; font-weight: 900; margin: 0; }
 
-        .period-section { margin-bottom: 15px; border-radius: 15px; padding: 15px 15px 5px 15px; transition: all 0.3s ease; }
-        .section-1 { background: linear-gradient(to bottom right, #fffdf2, #fff9e6); border: 2px dashed #ffeaa7; }
-        .section-2 { background: linear-gradient(to bottom right, #f4fbff, #e9f5ff); border: 2px dashed #74b9ff; }
-        .section-3 { background: linear-gradient(to bottom right, #f8f7ff, #f1f0ff); border: 2px dashed #a29bfe; }
-        .section-title-period { font-size: 1.1rem; font-weight: bold; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between; }
-        .title-left { display: flex; align-items: center; gap: 8px; }
-        .title-c1 { color: #d35400; } .title-c2 { color: #0984e3; } .title-c3 { color: #6c5ce7; }
-        .period-rem { font-size: 0.85rem; padding: 4px 10px; border-radius: 12px; font-weight: bold; transition: all 0.3s ease; background: #dfe6e9; color: #636e72; }
-
-        .grid-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 10px; min-height: 5px; }
-        .list-item { display: flex; align-items: center; gap: 8px; padding: 12px 15px; background: #fff; border-radius: 12px; transition: all 0.4s ease; border-left: 6px solid #b2bec3; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
-        .list-item.completed { opacity: 0.6; background: #f1f2f6; border-left-color: #b2bec3 !important; transform: scale(0.99); }
-        .list-item.completed input[type="text"], .list-item.completed input[type="number"], .list-item.completed select { text-decoration: line-through; color: #b2bec3; pointer-events: none; }
-        .section-1 .list-item { border-left-color: #fdcb6e; } .section-2 .list-item { border-left-color: #0984e3; } .section-3 .list-item { border-left-color: #6c5ce7; } 
-        .exchange-item { border-left-color: #e17055 !important; background: #fffaf0; }
-
-        .check-box, .ex-check-box { width: 22px; height: 22px; cursor: pointer; flex-shrink: 0; }
-        .check-box { accent-color: #00b894; } .ex-check-box { accent-color: #e17055; }
-        .type-select { width: 75px; padding: 6px; border-radius: 8px; border: 1px solid #dfe6e9; font-weight: bold; font-size: 0.9rem; background: #f8f9fa; color: #2d3436; }
-        .name-select { width: 130px; padding: 6px; border-radius: 8px; border: 1px solid #dfe6e9; font-weight: bold; font-size: 0.9rem; }
-        .progress-input { flex-grow: 1; padding: 6px 10px; border-radius: 8px; border: 1px solid #dfe6e9; font-size: 0.95rem; transition: 0.3s; }
-        .task-time-input { width: 55px; padding: 6px; text-align: center; border: 1px solid #dfe6e9; border-radius: 8px; font-weight: bold; font-size: 0.95rem; color: #d63031; }
-        .period-select { width: 70px; padding: 6px; border-radius: 8px; border: 1px solid #dfe6e9; font-weight: bold; font-size: 0.9rem; background: #f1f2f6; color: #636e72; }
-        .btn-del { background: #ff7675; color: white; border: none; border-radius: 8px; width: 30px; height: 30px; cursor: pointer; font-weight: bold; flex-shrink: 0; transition: 0.2s; }
-        .btn-del:active { transform: scale(0.9); }
-
-        .add-btn { background: linear-gradient(to right, #00b894, #00cec9); color: white; border: none; padding: 12px; border-radius: 12px; font-weight: bold; cursor: pointer; width: 100%; font-size: 1.1rem; box-shadow: 0 4px 10px rgba(0,184,148,0.3); transition: 0.2s; margin-bottom: 20px; }
-        .add-btn:active { transform: translateY(2px); box-shadow: none; }
-        .add-btn-ex { background: linear-gradient(to right, #e17055, #fab1a0); box-shadow: 0 4px 10px rgba(225,112,85,0.3); margin-top: 10px; margin-bottom: 25px; }
-        .section-title { font-size: 1.15rem; color: #d35400; border-bottom: 2px dashed #ffda79; padding-bottom: 5px; margin-bottom: 10px; font-weight: bold; display: flex; align-items: center; gap: 8px; }
-
-        .ep-footer { position: fixed; bottom: 0; left: 0; width: 100%; height: 70px; background: #2d3436; color: white; box-shadow: 0 -5px 20px rgba(0,0,0,0.2); display: flex; justify-content: center; align-items: center; z-index: 1000; border-top: 4px solid #636e72; }
-        .ep-content { display: flex; align-items: center; justify-content: center; gap: 5px; background: rgba(255, 255, 255, 0.15); padding: 5px 30px; border-radius: 50px; border: 1px solid rgba(255, 255, 255, 0.3); }
-        .ep-label { color:#bdc3c7; font-size: 0.9rem; letter-spacing: 1px; font-weight: bold; }
-        .ep-score { font-size: 2rem; font-weight: 800; color: var(--ep-color); text-shadow: 0 0 15px rgba(241, 196, 15, 0.8); }
-
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); justify-content: center; align-items: center; z-index: 2000; backdrop-filter: blur(3px); }
-        .modal-content { background: white; padding: 25px; border-radius: 20px; width: 85%; max-width: 400px; display: flex; flex-direction: column; gap: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); border: 4px solid #00cec9; }
-        .modal-content h3 { margin: 0; color: #00b894; border-bottom: 2px solid #f1f2f6; padding-bottom: 10px; }
-        .modal-content textarea { width: 92%; padding: 12px; height: 100px; border: 1px solid #dfe6e9; border-radius: 8px; font-size: 1.05rem; resize: none; font-family: inherit; }
-        .btn-submit-task, .btn-cancel { padding: 12px; border-radius: 8px; font-weight: bold; font-size: 1.1rem; cursor: pointer; border: none; color: white; }
-        .btn-submit-task { background: #00b894; } .btn-cancel { background: #b2bec3; padding: 8px; margin-top: -5px; }
-
-        .settings-date-range { background: #e9f5ff; padding: 15px; border-radius: 12px; margin-bottom: 20px; border: 2px solid #74b9ff; text-align: center; }
-        .settings-date-range input { padding: 8px; border-radius: 8px; border: 1px solid #dfe6e9; font-weight: bold; font-size: 1rem; margin: 0 5px; }
-        .btn-update-range { background: #0984e3; color: white; border: none; padding: 10px 20px; border-radius: 8px; font-weight: bold; margin-top: 10px; cursor: pointer; }
+        input, select, textarea { border: 1px solid #dfe6e9; border-radius: 8px; padding: 6px 8px; font-family: inherit; font-size: 0.95rem; font-weight: bold; color: var(--primary); }
         
+        .settings-date-range { background: #e9f5ff; padding: 15px; border-radius: 12px; margin-bottom: 20px; border: 2px solid #74b9ff; text-align: center; font-weight: bold; }
+        .settings-date-range input { padding: 6px; border-radius: 8px; border: 1px solid #dfe6e9; margin: 0 5px; }
         .domain-setting-block { background: #fff; padding: 18px; border-radius: 12px; margin-bottom: 15px; border: 2px solid #dfe6e9; }
         .domain-title { color: #0984e3; margin-top: 0; margin-bottom: 12px; border-bottom: 2px dashed #74b9ff; padding-bottom: 8px; font-size: 1.2rem; }
+        
         .settings-input-group { display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap; align-items: center; }
         .settings-input-group input.opt-name { flex: 2; padding: 10px; border: 1px solid #dfe6e9; border-radius: 8px; min-width: 150px; }
         .settings-input-group input.opt-memo { flex: 1.5; padding: 10px; border: 1px solid #dfe6e9; border-radius: 8px; background: #fdfdfd; min-width: 100px; }
-        .settings-input-group button { background: #00cec9; color: white; border: none; padding: 10px 15px; border-radius: 8px; font-weight: bold; cursor: pointer; }
-        .settings-list { list-style: none; padding: 0; margin: 0; }
-        .settings-list li { display: flex; justify-content: space-between; align-items: center; padding: 10px 12px; background: #f1f2f6; border-radius: 8px; margin-bottom: 8px; font-weight: bold; border-left: 4px solid #b2bec3; }
-        .settings-list li button { background: #ff7675; color: white; border: none; border-radius: 6px; padding: 5px 12px; cursor: pointer; font-weight: bold; transition: 0.2s; }
-        .btn-edit { background: #74b9ff !important; margin-right: 5px; }
-        .btn-status { background: #00b894 !important; margin-right: 5px; }
-        .btn-status.completed { background: #f39c12 !important; }
-        .settings-type-select { padding: 5px; border-radius: 6px; border: 1px solid #dfe6e9; font-weight: bold; font-size: 0.9rem; margin-right: 8px; color: #0984e3; background: white; cursor: pointer; }
         
-        .goal-item { display: flex; align-items: center; gap: 10px; padding: 10px; background: #fff; border-radius: 10px; margin-bottom: 8px; border: 1px solid #dfe6e9; border-left: 5px solid #00b894; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
+        .settings-list { list-style: none; padding: 0; margin: 0; }
+        .settings-list li { 
+            display: flex; justify-content: space-between; align-items: center; 
+            padding: 10px 12px; background: #f1f2f6; border-radius: 8px; 
+            margin-bottom: 8px; font-weight: bold; border-left: 4px solid #b2bec3; 
+            flex-wrap: nowrap; gap: 10px; overflow: hidden;
+        }
+        .settings-list li > div:first-child { display: flex; align-items: center; gap: 8px; flex-grow: 1; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+        .settings-list li > div:last-child { display: flex; gap: 5px; flex-shrink: 0; }
+        .settings-list button { background: #ff7675; color: white; border: none; border-radius: 6px; padding: 6px 10px; cursor: pointer; font-weight: bold; transition: 0.2s; font-size: 0.85rem; }
+        
+        /* Inline 編輯區塊的樣式 */
+        .edit-inline-row { display: flex; gap: 8px; width: 100%; align-items: center; flex-wrap: wrap; }
+        .edit-inline-row input { padding: 8px; }
+
+        .btn-status { background: #00b894 !important; }
+        .btn-edit { background: #74b9ff !important; }
+        
+        .finish-hint { color: var(--success); font-weight: bold; font-size: 0.85rem; margin-left: 10px; animation: pulse 1.5s infinite; }
+        @keyframes pulse { 0%, 100% { opacity: 0.6; } 50% { opacity: 1; } }
+
+        .goal-item { display: flex; align-items: center; gap: 10px; padding: 10px; background: #fff; border-radius: 10px; margin-bottom: 8px; border: 1px solid #dfe6e9; border-left: 5px solid #00b894; }
         .goal-item.done span { text-decoration: line-through; color: #b2bec3; }
-        .goal-item span { font-weight: bold; font-size: 1.05rem; flex-grow: 1; transition: 0.3s; }
+        .goal-item span { font-weight: bold; font-size: 1.05rem; flex-grow: 1; }
+
+        .ep-footer { position: fixed; bottom: 0; left: 0; width: 100%; height: 70px; background: var(--primary); display: flex; justify-content: center; align-items: center; z-index: 1001; border-top: 4px solid #636e72; }
+        .ep-content { display: flex; align-items: center; justify-content: center; gap: 5px; background: rgba(255, 255, 255, 0.15); padding: 5px 30px; border-radius: 50px; border: 1px solid rgba(255, 255, 255, 0.3); }
+        .ep-score { font-size: 2rem; font-weight: 800; color: var(--ep-color); text-shadow: 0 0 15px rgba(241, 196, 15, 0.8); }
         
         input.proj-val-input::placeholder { color: #a29bfe; font-weight: normal; font-size: 0.85rem; }
-
-        /* 榮譽殿堂樣式 */
-        .fame-card { background: linear-gradient(135deg, #fff9e6, #fff3cd); border: 2px solid #f1c40f; padding: 15px; border-radius: 12px; margin-bottom: 12px; box-shadow: 0 4px 10px rgba(241, 196, 15, 0.15); display: flex; justify-content: space-between; align-items: center; }
-        .fame-title { color: #d35400; font-size: 1.15rem; font-weight: 900; margin: 0; display: flex; align-items: center; gap: 8px; }
-        .fame-badge { font-size: 2rem; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1)); }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <div class="tab-nav">
-        <div class="tab-btn active" onclick="switchTab('view-main', this)">🏠 每日主控台</div>
-        <div class="tab-btn" onclick="switchTab('view-calendar', this)">🗺️ 實驗地圖</div>
-        <div class="tab-btn" onclick="switchTab('view-settings', this)">⚙️ 系統設定</div>
-    </div>
+<nav class="tab-nav">
+    <div class="tab-btn active" onclick="switchTab('view-main', this)">🏠 每日主控台</div>
+    <div class="tab-btn" onclick="switchTab('view-calendar', this)">🗺️ 實驗導航圖</div>
+    <div class="tab-btn" onclick="switchTab('view-settings', this)">⚙️ 系統設定</div>
+</nav>
 
-    <!-- 視圖 1：主控台 -->
-    <div id="view-main">
+<div class="main-wrapper">
+    <div id="view-main" class="container">
         <div class="header-panel">
-            <div class="quote-box"><span id="quoteText" class="fade-text">載入語錄中...</span></div>
+            <div class="quote-box"><span id="quoteText" class="fade-text">載入雙語座右銘...</span></div>
         </div>
 
         <div class="date-navigator">
-            <button class="btn-nav-date" onclick="navigateDate(-1)">◀ 前一天</button>
+            <button class="tab-btn" style="padding:8px 15px;" onclick="navigateDate(-1)">◀ 前一天</button>
             <div style="text-align:center;">
                 <h2 class="current-date-title" id="display-date">115年7月1日</h2>
-                <button class="btn-copy-yesterday" onclick="copyYesterday()">📋 複製前一日排程</button>
+                <button class="tab-btn" style="font-size:0.8rem; padding:5px 12px; margin-top:5px; background:#ffeaa7; color:#d35400;" onclick="copyYesterday()">📋 複製昨日計畫</button>
             </div>
-            <button class="btn-nav-date" onclick="navigateDate(1)">後一天 ▶</button>
+            <button class="tab-btn" style="padding:8px 15px;" onclick="navigateDate(1)">後一天 ▶</button>
         </div>
 
         <div class="time-config">
-            <div class="time-capsule t-morning"><span class="time-label">🌅 早上</span>
-                <div class="time-inputs-row"><input type="number" class="time-input" id="t_m_h" min="0" oninput="if(this.value<0)this.value=0;" onchange="saveAndCalculate()"> : <input type="number" class="time-input" id="t_m_m" min="0" oninput="if(this.value<0)this.value=0;" onchange="saveAndCalculate()"></div>
+            <div class="time-capsule" style="background:var(--morning-bg); color:var(--morning-text);">
+                <span>🌅 上午</span>
+                <div class="time-inputs-row"><input type="number" id="t_m_h" min="0" oninput="saveAndCalculate()">:<input type="number" id="t_m_m" min="0" oninput="saveAndCalculate()"></div>
             </div>
-            <div class="time-capsule t-afternoon"><span class="time-label">☀️ 下午</span>
-                <div class="time-inputs-row"><input type="number" class="time-input" id="t_a_h" min="0" oninput="if(this.value<0)this.value=0;" onchange="saveAndCalculate()"> : <input type="number" class="time-input" id="t_a_m" min="0" oninput="if(this.value<0)this.value=0;" onchange="saveAndCalculate()"></div>
+            <div class="time-capsule" style="background:var(--afternoon-bg); color:white;">
+                <span>☀️ 下午</span>
+                <div class="time-inputs-row"><input type="number" id="t_a_h" min="0" oninput="saveAndCalculate()">:<input type="number" id="t_a_m" min="0" oninput="saveAndCalculate()"></div>
             </div>
-            <div class="time-capsule t-evening"><span class="time-label">🌙 晚上</span>
-                <div class="time-inputs-row"><input type="number" class="time-input" id="t_e_h" min="0" oninput="if(this.value<0)this.value=0;" onchange="saveAndCalculate()"> : <input type="number" class="time-input" id="t_e_m" min="0" oninput="if(this.value<0)this.value=0;" onchange="saveAndCalculate()"></div>
+            <div class="time-capsule" style="background:var(--evening-bg); color:white;">
+                <span>🌙 晚上</span>
+                <div class="time-inputs-row"><input type="number" id="t_e_h" min="0" oninput="saveAndCalculate()">:<input type="number" id="t_e_m" min="0" oninput="saveAndCalculate()"></div>
             </div>
         </div>
 
@@ -173,64 +252,61 @@
             </div>
         </div>
         
-        <button class="add-btn" onclick="addNewTask()">➕ 增加新實驗任務</button>
+        <button class="tab-btn" style="width:100%; margin-bottom:20px; background:var(--success); color:white;" onclick="addNewTask()">➕ 增加新實驗任務</button>
 
         <div id="missionContainer">
-            <div class="period-section section-1"><div class="section-title-period title-c1"><div class="title-left">🌅 上午實驗區</div><span id="rem-1" class="period-rem">未設定時間</span></div><div id="list-1" class="grid-list"></div></div>
-            <div class="period-section section-2"><div class="section-title-period title-c2"><div class="title-left">☀️ 下午實驗區</div><span id="rem-2" class="period-rem">未設定時間</span></div><div id="list-2" class="grid-list"></div></div>
-            <div class="period-section section-3"><div class="section-title-period title-c3"><div class="title-left">🌙 晚上實驗區</div><span id="rem-3" class="period-rem">未設定時間</span></div><div id="list-3" class="grid-list"></div></div>
+            <div class="period-section section-1"><div class="section-title-period" style="color:var(--morning-text);"><div>🌅 上午實驗區</div><span id="rem-1" class="period-rem"></span></div><div id="list-1" class="grid-list"></div></div>
+            <div class="period-section section-2"><div class="section-title-period" style="color:var(--afternoon-text);"><div>☀️ 下午實驗區</div><span id="rem-2" class="period-rem"></span></div><div id="list-2" class="grid-list"></div></div>
+            <div class="period-section section-3"><div class="section-title-period" style="color:var(--evening-text);"><div>🌙 晚上實驗區</div><span id="rem-3" class="period-rem"></span></div><div id="list-3" class="grid-list"></div></div>
         </div>
         
-        <div class="section-title" style="margin-top: 15px;">🎁 能量兌換站</div>
+        <div class="section-title" style="margin-top: 30px; color:#d35400; font-weight:bold; font-size:1.2rem;">🎁 能量兌換站</div>
         <div id="exchangeContainer" class="grid-list"></div>
-        <button class="add-btn add-btn-ex" onclick="addNewExchange()">➕ 增加兌換項目</button>
+        <button class="tab-btn" style="background:#e17055; color:white; font-size:0.9rem;" onclick="addNewExchange()">➕ 增加兌換項目</button>
+
+        <div style="margin-top: 30px; margin-bottom: 20px;">
+            <textarea id="daily-note-input" placeholder="今天有什麼特別的發現嗎？ (例如：今天去水族館超開心)" style="width: 100%; box-sizing: border-box; min-height: 60px; border: 2px dashed #ffeaa7; border-radius: 12px; padding: 10px; resize: vertical;" oninput="saveDOMToDay()"></textarea>
+        </div>
     </div>
 
-    <!-- 視圖 2：實驗地圖 -->
-    <div id="view-calendar" style="display: none;">
-        <div style="background:#f0fff4; padding:20px; border-radius:15px; border:2px dashed #00b894; margin-bottom:20px;">
-            <h2 style="color:#00b894; margin-top:0; border-bottom:2px dashed #55efc4; padding-bottom:8px; display:flex; align-items:center; gap:8px;">🌟 我的北極星目標</h2>
+    <div id="view-calendar" class="container" style="display: none;">
+        <div style="background:#f0fff4; padding:20px; border-radius:20px; border:2px dashed var(--success); margin-bottom:25px;">
+            <h2 style="color:#00b894; margin-top:0; border-bottom:2px dashed #55efc4; padding-bottom:8px;">🌟 我的北極星目標</h2>
             <div class="settings-input-group">
-                <input type="text" id="new-goal-input" placeholder="輸入你想在暑假達成的大目標 (如：學會自由式)...">
-                <button onclick="addGoal()" style="background:#00b894;">➕ 新增目標</button>
+                <input type="text" id="new-goal-input" style="flex:1" placeholder="輸入你想在暑假達成的大目標 (如：學會自由式)...">
+                <button class="tab-btn" style="background:#00b894; color:white; padding:8px 15px;" onclick="addGoal()">新增目標</button>
             </div>
             <div id="goals-list"></div>
         </div>
 
-        <div class="header-panel">
-            <h1>🗺️ 實驗行事曆</h1>
-        </div>
-
-        <div style="display:flex; justify-content:center; gap:20px; font-size:0.95rem; font-weight:bold; color:#636e72; margin-bottom: 20px; flex-wrap:wrap; background:#fff; padding:10px; border-radius:10px; border:1px solid #dfe6e9;">
+        <h2 style="text-align:center; color:var(--primary); margin-bottom:10px;">🗺️ 實驗行事曆</h2>
+        <div style="display:flex; justify-content:center; gap:20px; font-size:0.95rem; font-weight:bold; color:#636e72; margin-bottom: 20px; flex-wrap:wrap; background:#fff; padding:10px; border-radius:10px; border:1px solid #eee;">
             <span style="display:flex; align-items:center; gap:6px;"><div style="width:16px; height:16px; border-radius:4px; background:#fff; border:2px solid #f1f2f6;"></div> 未排程</span>
-            <span style="display:flex; align-items:center; gap:6px;"><div style="width:16px; height:16px; border-radius:4px; background:#e9f5ff; border:2px solid #74b9ff;"></div> 藍：已排定計畫</span>
-            <span style="display:flex; align-items:center; gap:6px;"><div style="width:16px; height:16px; border-radius:4px; background:#e8f8f5; border:2px solid #00cec9;"></div> 綠：任務全數達成！</span>
+            <span style="display:flex; align-items:center; gap:6px;"><div style="width:16px; height:16px; border-radius:4px; background:#e9f5ff; border:2px solid #74b9ff;"></div> 藍：已排程</span>
+            <span style="display:flex; align-items:center; gap:6px;"><div style="width:16px; height:16px; border-radius:4px; background:#e8f8f5; border:2px solid #00cec9;"></div> 綠：任務完成/出遊紀錄！</span>
         </div>
         
         <div id="calendar-render-area"></div>
 
-        <!-- 📈 專案進度儀表板 (動態分成 進行中 與 榮譽殿堂) -->
-        <div id="project-dashboard" style="margin-top: 25px;"></div>
+        <h2 style="color:#0984e3; margin-top:35px; border-bottom:2px solid #eee; padding-bottom:5px; font-size:1.3rem;">📈 進行中專案看板</h2>
+        <div id="project-dashboard" class="project-grid"></div>
+        
+        <h2 style="color:#f39c12; margin-top:35px; border-bottom:2px solid #eee; padding-bottom:5px; font-size:1.3rem;">🏆 榮譽殿堂</h2>
+        <div id="fame-dashboard" class="project-grid"></div>
     </div>
 
-    <!-- 視圖 3：設定頁 -->
-    <div id="view-settings" style="display: none;">
-        <div class="header-panel">
-            <h1>⚙️ 系統設定中心</h1>
-        </div>
-
+    <div id="view-settings" class="container" style="display: none;">
+        <h2 style="color:#0984e3; border-bottom:2px solid #eee; padding-bottom:10px;">📅 全域期程總管</h2>
         <div class="settings-date-range">
-            <h3 style="margin-top:0; color:#0984e3;">📅 全域期程總管</h3>
-            開始日期：<input type="date" id="proj-start-date"> 
-            結束日期：<input type="date" id="proj-end-date"> <br>
-            <button class="btn-update-range" onclick="updateProjectRange()">更新全局日曆</button>
+            全局假期開始：<input type="date" id="proj-start-date"> 
+            結束：<input type="date" id="proj-end-date"> 
+            <button class="tab-btn" style="background:#0984e3; color:white; padding:6px 15px;" onclick="updateProjectRange()">更新全局</button>
         </div>
         
         <div style="text-align: center; margin: 30px 0 20px 0;">
             <h2 style="display: inline-block; color: #2d3436; border-bottom: 3px solid #0984e3; padding-bottom: 5px; margin: 0; letter-spacing: 2px;">🎯 專案總管</h2>
         </div>
         <div class="domain-setting-block" style="border: 2px dashed #0984e3; background: #f4fbff;">
-            <p style="font-size:0.9rem; color:#636e72; margin-top:0; margin-bottom:15px;">設定專案起訖日，系統會自動推算進度。點擊「結案」可將專案送入榮譽殿堂喔！</p>
             <div class="settings-input-group">
                 <input type="text" id="new-proj-name" class="opt-name" placeholder="專案名稱 (例:閱讀哈利波特)">
                 <select id="new-proj-domain" class="settings-type-select" style="flex:1;">
@@ -238,24 +314,22 @@
                     <option value="自然/科技">自然/科技</option><option value="藝術">藝術</option><option value="健康/體育">健康/體育</option><option value="綜合">綜合</option>
                 </select>
                 <select id="new-proj-type" class="settings-type-select" style="flex:1;">
-                    <option value="指定">指定</option><option value="自主" selected>自主</option><option value="其他">其他</option>
+                    <option value="指定">指定</option><option value="自主" selected>自主</option>
                 </select>
             </div>
-            <div class="settings-input-group" style="background:#fff; padding:10px; border-radius:8px; border:1px solid #dfe6e9;">
-                <span style="font-weight:bold; font-size:0.9rem; color:#2d3436;">目標:</span>
-                <input type="number" id="new-proj-goal" placeholder="數量" style="width:70px; padding:6px;" oninput="previewProjectCalc()">
-                <input type="text" id="new-proj-unit" placeholder="單位(如:頁)" style="width:70px; padding:6px;">
-                <span style="font-weight:bold; font-size:0.9rem; color:#2d3436; margin-left:10px;">起:</span>
-                <input type="date" id="new-proj-start" style="flex:1;" onchange="previewProjectCalc()">
-                <span style="font-weight:bold; font-size:0.9rem; color:#2d3436;">迄:</span>
-                <input type="date" id="new-proj-deadline" style="flex:1;" onchange="previewProjectCalc()">
+            <div class="settings-input-group" style="background:#fff; padding:10px; border-radius:8px; border:1px solid #eee;">
+                起算日期：<input type="date" id="new-proj-start" onchange="previewProjectCalc()">
+                執行天數：<input type="number" id="new-proj-days" style="width:65px; text-align:center;" min="1" oninput="previewProjectCalc()">
+                總目標量：<input type="number" id="new-proj-goal" style="width:75px; text-align:center;" min="1" oninput="previewProjectCalc()">
+                單位：<input type="text" id="new-proj-unit" style="width:55px; text-align:center;" placeholder="頁">
+                單次EP：<input type="number" id="new-proj-ep" style="width:50px; text-align:center;" value="5" min="1">
                 
-                <button id="btn-submit-proj" onclick="submitProjectForm()" style="background:#0984e3; margin-left:10px;">➕ 新增</button>
-                <button id="btn-cancel-proj" onclick="clearProjectForm()" style="background:#b2bec3; margin-left:5px; display:none;">❌ 取消</button>
+                <button id="btn-submit-proj" class="tab-btn" style="background:#0984e3; color:white; padding:6px 15px; margin-left:auto;" onclick="submitProjectForm()">➕ 新增</button>
+                <button id="btn-cancel-proj" class="tab-btn" style="background:#b2bec3; color:white; padding:6px 15px; display:none;" onclick="clearProjectForm()">❌ 取消</button>
             </div>
             
-            <div id="proj-calc-preview" style="font-size:0.95rem; color:#00b894; font-weight:bold; margin-bottom:15px; text-align:center; background:#e8f8f5; padding:8px; border-radius:8px;">
-                請輸入目標數量與起訖日期以計算每日平均
+            <div id="proj-calc-preview" style="font-size:0.95rem; color:var(--success); font-weight:bold; margin-bottom:15px; text-align:center; background:#e8f8f5; padding:8px; border-radius:8px;">
+                請輸入數據進行即時試算...
             </div>
 
             <ul class="settings-list" id="project-list"></ul>
@@ -268,45 +342,87 @@
     </div>
 </div>
 
-<div class="ep-footer"><div class="ep-content"><span class="ep-label">總累積 EP</span><span class="ep-score" id="epScore">0</span></div></div>
-
-<div class="modal" id="taskModal"><div class="modal-content"><h3>✅ 實驗發現與紀錄</h3><p style="font-weight:bold; color:#2d3436; margin:0;">領域：<span id="modalTaskName"></span></p><p style="font-size:0.9rem; color:#636e72; margin-top:-5px;">內容：<span id="modalTaskProgress"></span></p><textarea id="taskReflection" placeholder="把你的心得、發現或遇到的挑戰記錄下來吧..."></textarea><button class="btn-submit-task" id="btnSubmitTask" onclick="submitTask()">紀錄完成並獲取 5 EP</button><button class="btn-cancel" onclick="cancelTask()">先不要打卡</button></div></div>
+<footer class="ep-footer">
+    <div class="ep-content">
+        <span style="color:#bdc3c7; font-weight:bold; font-size:0.95rem;">總累積能量 EP</span>
+        <span id="epScore" class="ep-score">0</span>
+    </div>
+</footer>
 
 <div id="datalists-container"></div>
 
 <script>
-    let appData = JSON.parse(localStorage.getItem('holidayLabData')) || {
+    // --- 輔助函式：UUID 生成器 ---
+    function generateUUID() {
+        return crypto.randomUUID ? crypto.randomUUID() : 'proj-' + Math.random().toString(36).substr(2, 9);
+    }
+
+    // --- 核心資料狀態管理 ---
+    let appData = JSON.parse(localStorage.getItem('holidayLabData_v16.6')) || {
         ep: 0, startDate: "2026-07-01", endDate: "2026-08-30",
         goals: [], projects: [], 
         domainOptions: {
-            "語文/閱讀": [{type:"指定", name:"閱讀第1章", memo:""}],
-            "數學/邏輯": [{type:"指定", name:"完成數學習作", memo:""}],
-            "社會/人文": [{type:"自主", name:"查閱歷史地圖", memo:""}],
-            "自然/科技": [{type:"指定", name:"自然觀察日記", memo:""}],
-            "藝術": [{type:"自主", name:"繪畫創作", memo:""}],
-            "健康/體育": [{type:"指定", name:"跳繩", memo:""}],
-            "綜合": [{type:"指定", name:"整理房間", memo:""}]
+            "語文/閱讀": [{type:"指定", name:"閱讀第1章", memo:"", hidden:false, ep: 5}],
+            "數學/邏輯": [{type:"指定", name:"完成數學習作", memo:"", hidden:false, ep: 5}],
+            "社會/人文": [{type:"自主", name:"查閱歷史地圖", memo:"", hidden:false, ep: 5}],
+            "自然/科技": [{type:"指定", name:"自然觀察日記", memo:"", hidden:false, ep: 5}],
+            "藝術": [{type:"自主", name:"繪畫創作", memo:"", hidden:false, ep: 5}],
+            "健康/體育": [{type:"指定", name:"跳繩", memo:"", hidden:false, ep: 5}],
+            "綜合": [{type:"指定", name:"整理房間", memo:"", hidden:false, ep: 5}]
         },
         days: {} 
     };
 
+    // ✨ 歷史資料升級與相容機制：為舊資料補充 EP 與 UUID 主鍵設定
     if(!appData.projects) appData.projects = [];
     if(!appData.goals) appData.goals = [];
-    
-    // 資料無縫升級：確保舊專案具有 status 屬性
-    appData.projects.forEach(p => { if(!p.status) p.status = 'active'; });
+    appData.projects.forEach(p => { 
+        if(!p.status) p.status = 'active'; 
+        if(p.deadline && !p.duration) {
+            let diff = new Date(p.deadline) - new Date(p.startDate);
+            p.duration = Math.max(1, Math.floor(diff / 86400000) + 1);
+        }
+        if(p.ep === undefined) p.ep = 5;
 
+        // 綁定專屬 UUID 主鍵
+        if(!p.id) {
+            p.id = generateUUID();
+            let opt = appData.domainOptions[p.domain]?.find(o => o.name === p.name && o.memo === "★專案");
+            if (opt) opt.id = p.id;
+            
+            // 掃描起始日之後的歷史任務，賦予 UUID 主鍵
+            Object.keys(appData.days).forEach(date => {
+                if (date >= p.startDate && appData.days[date].tasks) {
+                    appData.days[date].tasks.forEach(t => {
+                        if (t.progress === p.name && !t.projId) t.projId = p.id;
+                    });
+                }
+            });
+        }
+    });
     Object.keys(appData.domainOptions).forEach(dom => {
         appData.domainOptions[dom] = appData.domainOptions[dom].map(opt => {
-            if (typeof opt === 'string') return {type: "指定", name: opt, memo: ""};
+            if (typeof opt === 'string') return {type: "指定", name: opt, memo: "", hidden:false, ep: 5};
             if (!opt.type) opt.type = "指定"; 
+            if (opt.memo === "★長期專案" || opt.memo === "★長期專案") opt.memo = "★專案";
+            if (opt.hidden === undefined) opt.hidden = false;
+            if (opt.ep === undefined) opt.ep = 5;
             return opt;
         });
     });
+    // 確認歷史天數的任務也有獨立 EP 屬性避免錯亂
+    Object.keys(appData.days).forEach(date => {
+        if(appData.days[date].tasks) {
+            appData.days[date].tasks.forEach(t => {
+                if(t.ep === undefined) t.ep = 5;
+            });
+        }
+    });
 
     let currentDateStr = appData.startDate; 
-    let currentTaskCheckbox = null;
     let editingProjectIdx = -1;
+    let editingDomain = null;     // 記錄目前正在 inline 編輯的領域
+    let editingOptIdx = -1;       // 記錄目前正在 inline 編輯的項目索引
     
     const domains = ["語文/閱讀", "數學/邏輯", "社會/人文", "自然/科技", "藝術", "健康/體育", "綜合"];
     const predefinedTasks = ["選擇領域...", ...domains, "其他"];
@@ -324,22 +440,20 @@
     window.onload = function() { 
         document.getElementById('proj-start-date').value = appData.startDate;
         document.getElementById('proj-end-date').value = appData.endDate;
-        renderSettings(); 
-        renderGoals();
-        updateDailyQuote(currentDateStr); 
-        updateEP();
-        renderCalendar();
+        renderAll();
         loadDayToDOM(currentDateStr);
     };
 
-    function saveData() { localStorage.setItem('holidayLabData', JSON.stringify(appData)); updateEP(); }
+    function saveData() { localStorage.setItem('holidayLabData_v16.6', JSON.stringify(appData)); updateEP(); }
+    function renderAll() { renderSettings(); renderGoals(); renderCalendar(); updateDailyQuote(currentDateStr); updateEP(); }
+    function updateEP() { document.getElementById('epScore').innerText = appData.ep; }
 
     function switchTab(viewId, btnElement) {
         document.getElementById('view-main').style.display = 'none';
         document.getElementById('view-calendar').style.display = 'none';
         document.getElementById('view-settings').style.display = 'none';
         document.getElementById(viewId).style.display = 'block';
-        document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+        document.querySelectorAll('.tab-nav .tab-btn').forEach(btn => btn.classList.remove('active'));
         btnElement.classList.add('active');
         if(viewId === 'view-calendar') renderCalendar();
     }
@@ -347,7 +461,7 @@
     function updateProjectRange() {
         const s = document.getElementById('proj-start-date').value; const e = document.getElementById('proj-end-date').value;
         if(s && e && s <= e) { appData.startDate = s; appData.endDate = e; saveData(); alert("全局期程更新成功！"); renderCalendar(); } 
-        else { alert("日期設定無效！"); }
+        else { alert("日期區間設定錯誤！"); }
     }
 
     function getFormattedDate(dateStr) {
@@ -363,29 +477,36 @@
 
     function navigateDate(offset) {
         saveDOMToDay(); 
-        let d = new Date(currentDateStr); d.setDate(d.getDate() + offset); let newDateStr = d.toISOString().split('T')[0];
-        currentDateStr = newDateStr; loadDayToDOM(currentDateStr);
-        updateDailyQuote(currentDateStr); 
+        let d = new Date(currentDateStr); d.setDate(d.getDate() + offset);
+        currentDateStr = d.toISOString().split('T')[0];
+        loadDayToDOM(currentDateStr);
     }
 
     function jumpToDate(dateStr) { 
         saveDOMToDay(); currentDateStr = dateStr; 
         loadDayToDOM(currentDateStr); 
-        updateDailyQuote(currentDateStr);
         switchTab('view-main', document.querySelector('.tab-nav .tab-btn:nth-child(1)')); 
     }
 
+    // --- 幫助函式：查詢該任務目前設定的 EP 分數 ---
+    function getTaskEP(domain, type, progressName) {
+        if (!appData.domainOptions[domain]) return 5;
+        let opt = appData.domainOptions[domain].find(o => o.name === progressName);
+        if (opt && opt.ep !== undefined) return parseInt(opt.ep);
+        return 5; // 防呆預設值
+    }
+
+    // --- 北極星目標 ---
     function renderGoals() {
         const list = document.getElementById('goals-list'); list.innerHTML = '';
         appData.goals.forEach((g, idx) => {
             let clz = g.done ? 'done' : ''; let chk = g.done ? 'checked' : '';
             list.innerHTML += `
                 <div class="goal-item ${clz}">
-                    <input type="checkbox" class="check-box" onchange="toggleGoal(${idx})" ${chk}>
+                    <input type="checkbox" class="check-box" onchange="toggleGoal(${idx})" ${chk} style="pointer-events:auto;">
                     <span>${g.text}</span>
-                    <button onclick="removeGoal(${idx})" class="btn-del" style="width:auto; padding:0 10px;">刪除</button>
-                </div>
-            `;
+                    <button onclick="removeGoal(${idx})" class="btn-del">×</button>
+                </div>`;
         });
     }
     function addGoal() {
@@ -405,8 +526,7 @@
         while(currentMonth <= endMonth) {
             let y = currentMonth.getFullYear(); let m = currentMonth.getMonth();
             let html = `<div class="calendar-month-block"><h2 class="calendar-month-title">${y-1911}年 ${m+1}月</h2><div class="calendar-grid">`;
-            const daysWeek = ["日", "一", "二", "三", "四", "五", "六"];
-            daysWeek.forEach(dw => html += `<div class="cal-header">${dw}</div>`);
+            ["日","一","二","三","四","五","六"].forEach(dw => html += `<div class="cal-header">${dw}</div>`);
             
             let firstDay = new Date(y, m, 1).getDay(); let daysInMonth = new Date(y, m+1, 0).getDate();
             for(let i=0; i<firstDay; i++) html += `<div class="cal-day empty"></div>`;
@@ -416,9 +536,18 @@
                 if(checkDate < appData.startDate || checkDate > appData.endDate) { html += `<div class="cal-day empty"></div>`; } 
                 else {
                     let statusClass = "status-none"; let dayData = appData.days[checkDate];
-                    if(dayData && dayData.tasks && dayData.tasks.length > 0) {
-                        let allDone = dayData.tasks.every(t => t.checked); statusClass = allDone ? "status-done" : "status-planned";
+                    
+                    if (dayData) {
+                        let hasTasks = dayData.tasks && dayData.tasks.length > 0;
+                        let hasNote = dayData.dailyNote && dayData.dailyNote.trim() !== "";
+                        
+                        if (hasTasks) {
+                            statusClass = dayData.tasks.every(t => t.completed) ? "status-done" : "status-planned";
+                        } else if (hasNote) {
+                            statusClass = "status-done";
+                        }
                     }
+
                     let activeClass = (checkDate === currentDateStr) ? "active" : "";
                     html += `<div class="cal-day ${statusClass} ${activeClass}" onclick="jumpToDate('${checkDate}')">${i}</div>`;
                 }
@@ -427,196 +556,196 @@
         }
     }
 
-    // --- 📈 繪製儀表板 (包含狀態區分) ---
-    function renderDashboard() {
-        const dash = document.getElementById('project-dashboard');
-        if(!appData.projects || appData.projects.length === 0) { dash.innerHTML = ''; return; }
-        
-        let activeProjects = appData.projects.filter(p => p.status === 'active');
-        let completedProjects = appData.projects.filter(p => p.status === 'completed');
-        
-        let html = '';
-
-        // 1. 進行中專案
-        if(activeProjects.length > 0) {
-            html += `<div class="calendar-month-block" style="background:#f4fbff; border-color:#74b9ff;">
-                <h2 class="calendar-month-title" style="color:#0984e3; border-bottom-color:#74b9ff; margin-bottom:20px;">📈 進行中專案</h2>`;
-            
-            activeProjects.forEach(proj => {
-                let accTotal = 0; let accBeforeToday = 0;
-                Object.entries(appData.days).forEach(([dStr, day]) => {
-                    if(day.tasks) { 
-                        day.tasks.forEach(t => { 
-                            if(t.progress === proj.name && t.projValue) {
-                                let val = parseInt(t.projValue);
-                                if(dStr <= currentDateStr) accTotal += val;
-                                if(dStr < currentDateStr) accBeforeToday += val;
-                            }
-                        }); 
+    function getProjectLiveStats(proj) {
+        let accTotal = 0; let accBeforeToday = 0;
+        Object.entries(appData.days).forEach(([dStr, day]) => {
+            if(day.tasks) {
+                day.tasks.forEach(t => {
+                    // 改為主鍵判定演算
+                    if(t.projId === proj.id && t.projValue) {
+                        let val = parseInt(t.projValue) || 0;
+                        accTotal += val;
+                        if(dStr < currentDateStr) accBeforeToday += val;
                     }
                 });
-                
-                let pStart = new Date(proj.startDate || appData.startDate); let pEnd = new Date(proj.deadline); let now = new Date(currentDateStr);
-                let originalDays = Math.max(1, Math.floor((pEnd - pStart) / 86400000) + 1);
-                let originalAvg = (proj.totalGoal / originalDays).toFixed(1); if(originalAvg.endsWith('.0')) originalAvg = originalAvg.slice(0, -2);
-                let passedDays = Math.floor((now - pStart) / 86400000);
-                let timePct = Math.max(0, Math.min(100, (passedDays / originalDays) * 100));
-                let taskPct = Math.min(100, (accTotal / proj.totalGoal) * 100);
-                
-                let remainingDays = Math.max(1, Math.floor((pEnd - now) / 86400000) + 1); if(now > pEnd) remainingDays = 1; 
-                let remainingGoal = Math.max(0, proj.totalGoal - accBeforeToday);
-                let avg = (remainingGoal / remainingDays).toFixed(1); if(avg.endsWith('.0')) avg = avg.slice(0, -2);
-                
-                let statusMsg = taskPct >= timePct ? "🟢 目前進度超前，繼續保持！" : "🔴 目前進度落後，調整一下步伐吧！";
-                if(accTotal >= proj.totalGoal) { statusMsg = "🏆 目標已達成！快到設定頁點擊「結案」放入榮譽殿堂吧！"; taskPct = 100; avg = 0; }
-                
-                html += `
-                <div style="margin-bottom:15px; padding:15px; background:#fff; border-radius:12px; box-shadow:0 2px 5px rgba(0,0,0,0.05); border-left:5px solid #0984e3;">
-                    <div style="display:flex; justify-content:space-between; margin-bottom:8px; align-items:center;">
-                        <strong style="font-size:1.15rem; color:#2d3436;">${proj.name}</strong> 
-                        <span style="font-weight:bold; color:#0984e3; font-size:1.1rem;">${accTotal} / ${proj.totalGoal} ${proj.unit}</span>
-                    </div>
-                    <div style="font-size:0.85rem; color:#636e72; margin-bottom:8px; display:flex; gap:15px; flex-wrap:wrap; background:#f8f9fa; padding:8px; border-radius:8px;">
-                        <span style="color:#0984e3;">🗓️ 預定計畫：總計 ${originalDays} 天，每日 ${originalAvg} ${proj.unit}</span>
-                    </div>
-                    <div style="font-size:0.9rem; color:#2d3436; margin-bottom:12px; font-weight:bold;">${statusMsg}</div>
-                    <div style="position:relative; height:18px; background:#dfe6e9; border-radius:9px; overflow:hidden; margin-bottom:10px;">
-                        <div style="position:absolute; top:0; left:0; height:100%; width:${timePct}%; background:rgba(178,190,195,0.4); border-right:2px dashed #636e72;"></div>
-                        <div style="position:absolute; top:0; left:0; height:100%; width:${taskPct}%; background:linear-gradient(90deg, #55efc4, #00b894); z-index:1; border-radius:9px;"></div>
-                    </div>
-                    <div style="display:flex; justify-content:space-between; font-size:0.85rem; color:#2d3436; font-weight:bold;">
-                        <span>⏳ 實際剩餘：${remainingDays} 天</span> 
-                        <span style="color:#d35400;">🎯 建議每日推進：${avg} ${proj.unit}</span>
-                    </div>
-                </div>`;
-            });
-            html += `</div>`;
-        }
-
-        // 2. 🏆 榮譽殿堂
-        if(completedProjects.length > 0) {
-            html += `<div class="calendar-month-block" style="background:#fffaf0; border-color:#f1c40f; margin-top:20px;">
-                <h2 class="calendar-month-title" style="color:#d35400; border-bottom-color:#f1c40f; margin-bottom:20px;">🏆 榮譽殿堂</h2>`;
-            
-            completedProjects.forEach(proj => {
-                let accTotal = 0;
-                Object.values(appData.days).forEach(day => {
-                    if(day.tasks) { day.tasks.forEach(t => { if(t.progress === proj.name && t.projValue) accTotal += parseInt(t.projValue); }); }
-                });
-                
-                html += `
-                <div class="fame-card">
-                    <div>
-                        <h3 class="fame-title">👑 ${proj.name}</h3>
-                        <p style="margin:5px 0 0 0; color:#636e72; font-size:0.9rem; font-weight:bold;">
-                            成功完成了 ${proj.totalGoal} ${proj.unit}！ (${proj.startDate} 啟航)
-                        </p>
-                    </div>
-                    <div class="fame-badge">🏅</div>
-                </div>`;
-            });
-            html += `</div>`;
-        }
+            }
+        });
+        let pEnd = new Date(proj.deadline); let now = new Date(currentDateStr);
+        let remainingDays = Math.ceil((pEnd - now) / 86400000) + 1;
+        if(now > pEnd) remainingDays = 1;
         
-        dash.innerHTML = html;
+        let remainingGoal = Math.max(0, proj.totalGoal - accBeforeToday);
+        let avg = (remainingDays > 0) ? (remainingGoal / remainingDays).toFixed(1) : 0;
+        return { accTotal, remainingDays: remainingDays > 0 ? remainingDays : 0, dailySuggest: avg.endsWith('.0') ? avg.slice(0, -2) : avg };
     }
 
+    function renderDashboard() {
+        const activeArea = document.getElementById('project-dashboard'); activeArea.innerHTML = '';
+        const fameArea = document.getElementById('fame-dashboard'); fameArea.innerHTML = '';
+        
+        appData.projects.forEach(proj => {
+            const stats = getProjectLiveStats(proj);
+            let taskPct = Math.min(100, (stats.accTotal / proj.totalGoal) * 100);
+            
+            if(proj.status === 'active') {
+                let dFocus = new Date(currentDateStr);
+                let focusDateLabel = `${dFocus.getFullYear()-1911}年${dFocus.getMonth()+1}月${dFocus.getDate()}日`;
+
+                activeArea.innerHTML += `
+                <div class="project-card ${stats.accTotal >= proj.totalGoal ? 'achieved' : ''}">
+                    <div style="display:flex; justify-content:space-between; font-weight:bold; margin-bottom:8px;">
+                        <span style="font-size:1.1rem; color:var(--primary);">${proj.name}</span>
+                        <span style="color:#0984e3; font-size:1.1rem;">${stats.accTotal} / ${proj.totalGoal} ${proj.unit}</span>
+                    </div>
+                    <div style="font-size:0.8rem; color:#636e72; background:#f8fafc; padding:6px 10px; border-radius:8px; margin-bottom:12px; font-weight:bold; border:1px solid #eee;">
+                        📅 期程：${proj.startDate} ~ ${proj.deadline} (${proj.duration}天) | 🎯 總計: ${proj.totalGoal}${proj.unit} | 📈 預定每日: ${(proj.totalGoal/proj.duration).toFixed(1).replace('.0','')} ${proj.unit}
+                    </div>
+                    <div style="position:relative; height:12px; background:#dfe6e9; border-radius:6px; overflow:hidden; margin-bottom:12px;">
+                        <div style="position:absolute; top:0; left:0; height:100%; width:${taskPct}%; background:linear-gradient(90deg, #55efc4, #00b894); border-radius:6px;"></div>
+                    </div>
+                    
+                    <div style="display:flex; justify-content:space-between; font-size:0.85rem; font-weight:bold; align-items:center; flex-wrap:wrap; gap:8px;">
+                        <span style="display:flex; align-items:center;">
+                            <span style="background:#e9f5ff; color:#0984e3; padding:3px 6px; border-radius:6px; margin-right:6px; font-size:0.8rem;">📍 ${focusDateLabel} 視角</span>
+                            <span>⏳ 距離到期日：${stats.remainingDays} 天</span>
+                        </span>
+                        <span style="color:#d35400;">🎯 建議今日推進：${stats.dailySuggest} ${proj.unit}</span>
+                    </div>
+                </div>`;
+            } else {
+                fameArea.innerHTML += `
+                <div class="fame-card">
+                    <div><h3 class="fame-title">👑 ${proj.name}</h3><p style="margin:4px 0 0 0; color:#636e72; font-size:0.85rem; font-weight:bold;">順利挑戰完畢 ${proj.totalGoal} ${proj.unit}！</p></div>
+                    <div style="font-size:1.8rem;">🏅</div>
+                </div>`;
+            }
+        });
+    }
+
+    // --- 🏠 主控台渲染與互動 ---
     function loadDayToDOM(dateStr) {
         document.getElementById('display-date').innerText = getFormattedDate(dateStr);
-        updateDailyQuote(dateStr); 
+        updateDailyQuote(dateStr);
 
-        let dayData = appData.days[dateStr] || { times: [0,0, 0,0, 0,0], tasks: [], exchanges: [] };
+        let dayData = appData.days[dateStr] || { times: [0,0, 0,0, 0,0], tasks: [], exchanges: [], dailyNote: "" };
         
-        document.getElementById('t_m_h').value = dayData.times[0] || ''; document.getElementById('t_m_m').value = dayData.times[1] || '';
-        document.getElementById('t_a_h').value = dayData.times[2] || ''; document.getElementById('t_a_m').value = dayData.times[3] || '';
-        document.getElementById('t_e_h').value = dayData.times[4] || ''; document.getElementById('t_e_m').value = dayData.times[5] || '';
+        document.getElementById('daily-note-input').value = dayData.dailyNote || '';
+
+        ['t_m_h','t_m_m','t_a_h','t_a_m','t_e_h','t_e_m'].forEach((id, i) => document.getElementById(id).value = dayData.times[i] || '');
         
         document.getElementById('list-1').innerHTML = ''; document.getElementById('list-2').innerHTML = ''; document.getElementById('list-3').innerHTML = '';
         document.getElementById('exchangeContainer').innerHTML = '';
         
-        dayData.tasks.forEach(t => renderTaskToDOM(t)); dayData.exchanges.forEach(e => renderExchangeToDOM(e));
+        if(dayData.tasks) dayData.tasks.forEach(t => renderTaskToDOM(t)); 
+        if(dayData.exchanges) dayData.exchanges.forEach(e => renderExchangeToDOM(e));
         calculateTime();
     }
 
     function saveDOMToDay() {
-        let times = [
-            parseInt(document.getElementById('t_m_h').value)||0, parseInt(document.getElementById('t_m_m').value)||0,
-            parseInt(document.getElementById('t_a_h').value)||0, parseInt(document.getElementById('t_a_m').value)||0,
-            parseInt(document.getElementById('t_e_h').value)||0, parseInt(document.getElementById('t_e_m').value)||0
-        ];
+        let times = ['t_m_h','t_m_m','t_a_h','t_a_m','t_e_h','t_e_m'].map(id => parseInt(document.getElementById(id).value)||0);
+        let dailyNote = document.getElementById('daily-note-input').value.trim();
         let tasks = [];
         document.querySelectorAll('#missionContainer .list-item').forEach(el => {
+            let typeSel = el.querySelector('.type-select') ? el.querySelector('.type-select').value : '指定';
+            let nameSel = el.querySelector('.name-select') ? el.querySelector('.name-select').value : '選擇領域...';
+            let progInp = el.querySelector('.progress-input') ? el.querySelector('.progress-input').value : '';
+            let stageInp = el.querySelector('.task-stage-input');
+            let valInp = el.querySelector('.proj-val-input'); 
+            let timeInp = el.querySelector('.task-time-input');
+            let periodSel = el.querySelector('.period-select');
+            
+            let lockedEpAttr = el.getAttribute('data-locked-ep');
+            let projIdAttr = el.getAttribute('data-proj-id');
+            let savedEp;
+            if (el.classList.contains('completed')) {
+                savedEp = lockedEpAttr ? parseInt(lockedEpAttr) : 5;
+            } else {
+                savedEp = undefined; 
+            }
+
             tasks.push({
                 checked: el.querySelector('.check-box').checked, completed: el.classList.contains('completed'), 
-                type: el.querySelector('.type-select').value, name: el.querySelector('.name-select').value,
-                progress: el.querySelector('.progress-input').value, 
-                projValue: parseInt(el.querySelector('.proj-val-input').value) || 0, 
-                time: parseInt(el.querySelector('.task-time-input').value) || 0,
-                period: el.querySelector('.period-select').value, reflection: el.getAttribute('data-reflection') || ""
+                type: typeSel, name: nameSel, progress: progInp, 
+                stageMemo: stageInp ? stageInp.value : '', 
+                projValue: valInp ? (parseInt(valInp.value) || 0) : 0, 
+                time: timeInp ? (parseInt(timeInp.value) || 0) : 0,
+                period: periodSel ? periodSel.value : '1',
+                ep: savedEp,
+                projId: projIdAttr || undefined
             });
         });
         let exchanges = [];
         document.querySelectorAll('#exchangeContainer .list-item').forEach(el => {
-            exchanges.push({ checked: el.querySelector('.ex-check-box').checked, completed: el.classList.contains('completed'), name: el.querySelector('.ex-name').value, cost: parseInt(el.querySelector('.ex-cost').value) || 0 });
+            exchanges.push({ 
+                checked: el.querySelector('.ex-check-box').checked, completed: el.classList.contains('completed'), 
+                name: el.querySelector('.ex-name').value, cost: parseInt(el.querySelector('.ex-cost').value) || 0 
+            });
         });
-        appData.days[currentDateStr] = { times, tasks, exchanges }; saveData();
+        appData.days[currentDateStr] = { times, tasks, exchanges, dailyNote }; saveData();
     }
 
-    function saveAndCalculate() { 
-        saveDOMToDay(); 
-        calculateTime(); 
-        refreshAllProjectBindings(); 
-    }
+    function saveAndCalculate() { saveDOMToDay(); calculateTime(); refreshAllProjectBindings(); }
 
     function copyYesterday() {
+        let hasTimeInput = ['t_m_h','t_m_m','t_a_h','t_a_m','t_e_h','t_e_m'].some(id => (parseInt(document.getElementById(id).value) || 0) > 0);
+        if (hasTimeInput) {
+            if (!confirm("⚠️ 今日已填寫膠囊時間。執行複製將徹底覆寫畫面中所有設定，確定要繼續嗎？")) return;
+        }
+        
         let d = new Date(currentDateStr); d.setDate(d.getDate() - 1); let yestStr = d.toISOString().split('T')[0];
         if(appData.days[yestStr]) {
             let clone = JSON.parse(JSON.stringify(appData.days[yestStr]));
-            clone.tasks.forEach(t => { t.checked = false; t.completed = false; t.reflection = ""; t.projValue = 0; });
+            // 複製到今天時，將完成狀態與專案進度重置，並且刪除被鎖定的 ep 屬性，讓它「向後生效」能抓取最新的 EP
+            clone.tasks.forEach(t => { t.checked = false; t.completed = false; t.projValue = 0; delete t.ep; });
             clone.exchanges.forEach(e => { e.checked = false; e.completed = false; });
+            clone.dailyNote = ""; // 清空特別發現紀錄，避免誤植
             appData.days[currentDateStr] = clone; loadDayToDOM(currentDateStr); saveData(); alert("✅ 已成功複製前一日的排程版型！");
-        } else { alert("⚠️ 前一天沒有排程資料可以複製喔！"); }
+        } else { alert("⚠️ 昨日尚無排程資料。"); }
     }
 
-    function refreshAllProjectBindings() {
-        document.querySelectorAll('#missionContainer .progress-input').forEach(el => {
-            checkProjectBinding(el);
-        });
-    }
+    function refreshAllProjectBindings() { document.querySelectorAll('#missionContainer .progress-input').forEach(el => checkProjectBinding(el)); }
 
-    // --- 檢查專案綁定 (僅針對 active 狀態) ---
     function checkProjectBinding(inputEl) {
-        const p = inputEl.parentElement;
+        const p = inputEl.closest('.list-item');
         const projContainer = p.querySelector('.proj-container');
         const unitLabel = p.querySelector('.proj-unit-label');
         const valInput = p.querySelector('.proj-val-input');
+        const stageInput = p.querySelector('.task-stage-input');
         const val = inputEl.value.trim();
         
-        if(!appData.projects) appData.projects = [];
-        const proj = appData.projects.find(pr => pr.name === val && pr.status === 'active');
+        let projId = p.getAttribute('data-proj-id');
+        let proj = appData.projects.find(pr => pr.name === val);
         
+        // 雙重判定：覆蓋優先，歷史 UUID 配對為輔
+        if (proj) {
+            p.setAttribute('data-proj-id', proj.id);
+        } else if (projId && val !== '') {
+            proj = appData.projects.find(pr => pr.id === projId);
+        } else {
+            p.removeAttribute('data-proj-id');
+        }
+
         if(proj) {
             projContainer.style.display = 'flex';
+            if(stageInput) stageInput.style.display = 'none';
             inputEl.style.width = '120px'; inputEl.style.flexGrow = '0';
-            inputEl.style.backgroundColor = '#e8f8f5'; inputEl.style.color = '#00b894'; inputEl.style.fontWeight = 'bold';
+            inputEl.style.backgroundColor = '#e8f8f5'; inputEl.style.color = '#00b894';
+            valInput.style.width = '160px';
             
-            let accBeforeToday = 0; 
-            Object.entries(appData.days).forEach(([dStr, day]) => {
-                if(dStr < currentDateStr) {
-                    if(day.tasks) { day.tasks.forEach(t => { if(t.progress === proj.name && t.projValue) accBeforeToday += parseInt(t.projValue); }); }
-                }
-            });
-            let pEnd = new Date(proj.deadline); let now = new Date(currentDateStr);
-            let remainingDays = Math.max(1, Math.floor((pEnd - now) / 86400000) + 1); if(now > pEnd) remainingDays = 1; 
-            let remainingGoal = Math.max(0, proj.totalGoal - accBeforeToday);
-            let avg = (remainingGoal / remainingDays).toFixed(1); if(avg.endsWith('.0')) avg = avg.slice(0, -2);
-            
-            valInput.placeholder = `建議:${avg}`;
-            unitLabel.innerHTML = `/ 共 ${proj.totalGoal} ${proj.unit} <span style="color:#e17055; font-size:0.85rem; margin-left:5px;">(建議: ${avg})</span>`;
+            if (proj.status === 'completed') {
+                valInput.placeholder = `(🎉已結案)`;
+                unitLabel.innerHTML = ``;
+            } else {
+                const stats = getProjectLiveStats(proj);
+                valInput.placeholder = `專案，建議今日${stats.dailySuggest}${proj.unit}`;
+                unitLabel.innerHTML = ``;
+            }
         } else {
             projContainer.style.display = 'none';
+            if(stageInput) stageInput.style.display = 'inline-block';
             inputEl.style.width = ''; inputEl.style.flexGrow = '1';
-            inputEl.style.backgroundColor = ''; inputEl.style.color = ''; inputEl.style.fontWeight = '';
+            inputEl.style.backgroundColor = ''; inputEl.style.color = '';
+            valInput.style.width = '65px';
         }
     }
 
@@ -628,8 +757,22 @@
         inputEl.value = ''; saveAndCalculate();
     }
 
+    function sortTasks() {
+        const allTasks = Array.from(document.querySelectorAll('#missionContainer .list-item'));
+        allTasks.forEach(t => {
+            const period = t.querySelector('.period-select').value;
+            document.getElementById('list-' + period).appendChild(t);
+        });
+    }
+
     function renderTaskToDOM(t) {
-        const div = document.createElement('div'); div.className = `list-item ${t.completed ? 'completed' : ''}`; div.setAttribute('data-reflection', t.reflection); 
+        const div = document.createElement('div'); 
+        div.className = `list-item ${t.completed ? 'completed' : ''}`; 
+        
+        // 渲染時標記 UUID 與鎖定之 EP
+        if(t.ep !== undefined) { div.setAttribute('data-locked-ep', t.ep); }
+        div.setAttribute('data-proj-id', t.projId || '');
+        
         let isChecked = t.checked ? 'checked' : ''; let dIdx = domains.indexOf(t.name);
         let listAttr = dIdx !== -1 ? `list="dl-opt-${dIdx}-${t.type || '指定'}"` : '';
 
@@ -641,117 +784,135 @@
             <select class="name-select" onchange="handleTaskSelectChange(this)">
                 ${predefinedTasks.map(opt => `<option value="${opt}" ${t.name===opt?'selected':''}>${opt}</option>`).join('')}
             </select>
-            <input type="text" class="progress-input" ${listAttr} value="${t.progress}" placeholder="下拉或自填" oninput="saveAndCalculate()">
+            <input type="text" class="progress-input" ${listAttr} value="${t.progress || ''}" placeholder="下拉或自填" oninput="saveAndCalculate()">
+            
+            <input type="text" class="task-stage-input" value="${t.stageMemo || ''}" placeholder="進度說明..." oninput="saveDOMToDay()">
+
             <div class="proj-container" style="display:none; align-items:center; gap:5px; margin-left:3px; margin-right:3px;">
-                <input type="number" class="proj-val-input" placeholder="數字" value="${t.projValue||''}" style="width:65px; padding:6px; border:1px solid #00cec9; border-radius:8px; font-weight:bold; color:#0984e3;" min="0" oninput="if(this.value<0)this.value=0; saveAndCalculate();">
+                <input type="number" class="proj-val-input" placeholder="數字" value="${t.projValue || ''}" style="width:65px; padding:6px; border:1px solid #00cec9; border-radius:8px; font-weight:bold; color:#0984e3;" min="0" oninput="saveAndCalculate()">
                 <span class="proj-unit-label" style="font-size:0.85rem; font-weight:bold; color:#636e72;"></span>
             </div>
-            <input type="number" class="task-time-input" placeholder="分" value="${t.time||''}" min="0" oninput="if(this.value<0)this.value=0;" onchange="saveAndCalculate()">
+            <input type="number" class="task-time-input" placeholder="分" value="${t.time || ''}" min="0" oninput="saveAndCalculate()">
+            
             <select class="period-select" onchange="sortTasks(); saveAndCalculate();">
-                <option value="1" ${t.period==='1'?'selected':''}>上午</option><option value="2" ${t.period==='2'?'selected':''}>下午</option><option value="3" ${t.period==='3'?'selected':''}>晚上</option>
+                <option value="1" ${t.period==='1'?'selected':''}>上午</option>
+                <option value="2" ${t.period==='2'?'selected':''}>下午</option>
+                <option value="3" ${t.period==='3'?'selected':''}>晚上</option>
             </select>
-            <button class="btn-del" onclick="deleteTask(this)">X</button>
+            <button class="btn-del" onclick="this.parentElement.remove(); saveAndCalculate();">×</button>
         `;
-        document.getElementById('list-' + t.period).appendChild(div);
+        document.getElementById('list-' + (t.period || 1)).appendChild(div);
         checkProjectBinding(div.querySelector('.progress-input')); 
     }
 
     function addNewTask() {
-        const div = document.createElement('div'); div.className = `list-item`; div.setAttribute('data-reflection', ""); 
-        div.innerHTML = `
-            <input type="checkbox" class="check-box" onchange="handleTaskCheck(this)">
-            <select class="type-select" onchange="handleTaskSelectChange(this)"><option value="指定">指定</option><option value="自主">自主</option><option value="其他">其他</option></select>
-            <select class="name-select" onchange="handleTaskSelectChange(this)">${predefinedTasks.map(t => `<option value="${t}">${t}</option>`).join('')}</select>
-            <input type="text" class="progress-input" placeholder="下拉或自填" oninput="saveAndCalculate()">
-            <div class="proj-container" style="display:none; align-items:center; gap:5px; margin-left:3px; margin-right:3px;">
-                <input type="number" class="proj-val-input" placeholder="數字" style="width:65px; padding:6px; border:1px solid #00cec9; border-radius:8px; font-weight:bold; color:#0984e3;" min="0" oninput="if(this.value<0)this.value=0; saveAndCalculate();">
-                <span class="proj-unit-label" style="font-size:0.85rem; font-weight:bold; color:#636e72;"></span>
-            </div>
-            <input type="number" class="task-time-input" placeholder="分" min="0" oninput="if(this.value<0)this.value=0;" onchange="saveAndCalculate()">
-            <select class="period-select" onchange="sortTasks(); saveAndCalculate();"><option value="1">上午</option><option value="2">下午</option><option value="3">晚上</option></select>
-            <button class="btn-del" onclick="deleteTask(this)">X</button>
-        `;
-        document.getElementById('list-1').appendChild(div);
+        renderTaskToDOM({ checked: false, completed: false, type: '指定', name: '選擇領域...', progress: '', stageMemo: '', projValue: 0, time: 0, period: '1', projId: undefined });
         saveAndCalculate();
     }
 
-    function deleteTask(btn) { const parent = btn.parentElement; if (parent.classList.contains('completed')) { appData.ep = Math.max(0, appData.ep - 5); } parent.remove(); saveAndCalculate(); }
-    function sortTasks() { const all = document.querySelectorAll('#missionContainer .list-item'); all.forEach(t => document.getElementById('list-' + t.querySelector('.period-select').value).appendChild(t)); }
-    
+    function renderExchangeToDOM(e) {
+        const div = document.createElement('div'); div.className = `list-item exchange-item ${e.completed ? 'completed' : ''}`;
+        let isChecked = e.checked ? 'checked' : '';
+        div.innerHTML = `
+            <input type="checkbox" class="ex-check-box" onchange="handleExchangeCheck(this)" ${isChecked}>
+            <input type="text" class="progress-input ex-name" placeholder="兌換項目" value="${e.name || ''}" oninput="saveDOMToDay()">
+            <input type="number" class="task-time-input ex-cost" placeholder="需EP" value="${e.cost || ''}" oninput="saveDOMToDay()">
+            <button class="btn-del" onclick="this.parentElement.remove(); saveDOMToDay();">×</button>
+        `;
+        document.getElementById('exchangeContainer').appendChild(div);
+    }
+    function addNewExchange() { renderExchangeToDOM({ checked: false, completed: false, name: '', cost: 0 }); saveDOMToDay(); }
+
     function handleTaskCheck(chk) { 
         const p = chk.parentElement; 
+        let typeSel = p.querySelector('.type-select').value;
+        let nameSel = p.querySelector('.name-select').value;
+        let progInp = p.querySelector('.progress-input').value;
+
+        // 引入 UUID 綁定機制檢測結案狀態
+        let projIdAttr = p.getAttribute('data-proj-id');
+        let linkedProj = appData.projects.find(pr => pr.id === projIdAttr || pr.name === progInp);
+
+        if (linkedProj && linkedProj.status === 'completed') {
+            alert("已結案，若要修改請至「系統設定」中取消結案。");
+            chk.checked = !chk.checked; 
+            return;
+        }
+
         if(chk.checked) { 
-            currentTaskCheckbox = chk; 
-            let domainName = p.querySelector('.name-select').value;
-            document.getElementById('modalTaskName').innerText = `[${p.querySelector('.type-select').value}] ${domainName === "選擇領域..." ? "未指定領域" : domainName}`; 
-            document.getElementById('modalTaskProgress').innerText = p.querySelector('.progress-input').value || "無"; 
-            document.getElementById('taskReflection').value = p.getAttribute('data-reflection'); 
-            document.getElementById('taskModal').style.display = "flex"; 
+            let freshEp = getTaskEP(nameSel, typeSel, progInp);
+            p.setAttribute('data-locked-ep', freshEp);
+            p.classList.add('completed'); 
+            appData.ep += freshEp; 
+            saveAndCalculate(); 
         } else { 
-            p.classList.remove('completed'); appData.ep = Math.max(0, appData.ep - 5); saveAndCalculate(); 
+            let lockedEp = parseInt(p.getAttribute('data-locked-ep')) || 5;
+            if (appData.ep - lockedEp < 0) {
+                alert("能量點數餘額不足！請先取消兌換項目，或持續累積點數。");
+                chk.checked = true;
+                return;
+            }
+            p.classList.remove('completed'); 
+            appData.ep -= lockedEp; 
+            p.removeAttribute('data-locked-ep');
+            saveAndCalculate(); 
         } 
     }
-    
-    function cancelTask() { if(currentTaskCheckbox) currentTaskCheckbox.checked = false; document.getElementById('taskModal').style.display = "none"; saveDOMToDay(); }
-    function submitTask() { let btn = document.getElementById('btnSubmitTask'); btn.innerText = "紀錄中..."; setTimeout(() => { currentTaskCheckbox.parentElement.classList.add('completed'); currentTaskCheckbox.parentElement.setAttribute('data-reflection', document.getElementById('taskReflection').value); document.getElementById('taskModal').style.display = "none"; appData.ep += 5; saveAndCalculate(); btn.innerText = "紀錄完成並獲取 5 EP"; }, 800); }
-    
-    function addNewExchange() { const div = document.createElement('div'); div.className = `list-item exchange-item`; div.innerHTML = `<input type="checkbox" class="ex-check-box" onchange="handleExchangeCheck(this)"><input type="text" class="progress-input ex-name" placeholder="兌換項目" onchange="saveDOMToDay()"><input type="number" class="task-time-input ex-cost" placeholder="需 EP" style="width:60px;" min="0" oninput="if(this.value<0)this.value=0;" onchange="saveDOMToDay()"><button class="btn-del" onclick="deleteExchange(this)">X</button>`; document.getElementById('exchangeContainer').appendChild(div); saveDOMToDay(); }
-    function deleteExchange(btn) { const p = btn.parentElement; if (p.classList.contains('completed')) { appData.ep += parseInt(p.querySelector('.ex-cost').value) || 0; } p.remove(); saveDOMToDay(); }
-    function handleExchangeCheck(chk) { const p = chk.parentElement; let cost = parseInt(p.querySelector('.ex-cost').value) || 0; if(chk.checked) { if(cost > appData.ep) { alert("科學家，我們的 EP 餘額不足喔！"); chk.checked = false; return; } appData.ep -= cost; p.classList.add('completed'); } else { appData.ep += cost; p.classList.remove('completed'); } saveDOMToDay(); }
-    function updateEP() { document.getElementById('epScore').innerText = appData.ep; }
+
+    function handleExchangeCheck(chk) { 
+        const p = chk.parentElement; let cost = parseInt(p.querySelector('.ex-cost').value) || 0; 
+        if(chk.checked) { 
+            if(cost > appData.ep) { alert("能量點數不足喔！繼續實驗累積吧！"); chk.checked = false; return; } 
+            appData.ep -= cost; p.classList.add('completed'); 
+        } else { appData.ep += cost; p.classList.remove('completed'); } 
+        saveDOMToDay();
+    }
 
     function calculateTime() {
         const hInps = [document.getElementById('t_m_h'), document.getElementById('t_a_h'), document.getElementById('t_e_h')];
         const mInps = [document.getElementById('t_m_m'), document.getElementById('t_a_m'), document.getElementById('t_e_m')];
         let pTotal = hInps.map((h, i) => (Math.max(0, parseInt(h.value)) || 0) * 60 + (Math.max(0, parseInt(mInps[i].value)) || 0));
-        let totalMin = pTotal.reduce((a, b) => a + b, 0);
-        let pUsed = [0, 0, 0], usedMin = 0;
+        let totalMin = pTotal.reduce((a, b) => a + b, 0); let pUsed = [0, 0, 0], usedMin = 0;
         
-        document.querySelectorAll('.task-time-input').forEach(input => { 
-            if(!input.parentElement.classList.contains('exchange-item')) {
-                let time = Math.max(0, parseInt(input.value)) || 0; usedMin += time;
-                let period = parseInt(input.parentElement.querySelector('.period-select').value) || 1; pUsed[period-1] += time;
+        document.querySelectorAll('#missionContainer .list-item').forEach(el => {
+            let timeInp = el.querySelector('.task-time-input');
+            if(timeInp) {
+                let time = Math.max(0, parseInt(timeInp.value)) || 0; usedMin += time;
+                let pid = el.querySelector('.period-select') ? el.querySelector('.period-select').value : el.closest('.grid-list').id.split('-')[1];
+                pUsed[pid-1] += time;
             }
         });
         
         document.getElementById('totalTimeText').innerText = totalMin > 0 ? `總時間資源：${Math.floor(totalMin/60)}小時 ${totalMin%60}分` : "請輸入上方膠囊時間...";
         let usedPct = totalMin > 0 ? Math.min(100, (usedMin / totalMin) * 100) : 0;
         document.getElementById('taskBar').style.width = `${usedPct}%`; document.getElementById('freeBar').style.width = `${100 - usedPct}%`;
-        
-        if(totalMin - usedMin < 0) {
-            document.getElementById('taskBar').innerText = `已排程: ${usedMin}分 (超時 ${Math.abs(totalMin - usedMin)}分)`;
+        document.getElementById('taskBar').innerText = usedMin > 0 ? `已排程: ${usedMin}分` : '';
+        document.getElementById('freeBar').innerText = (totalMin - usedMin) > 0 ? `放空: ${totalMin - usedMin}分` : '';
+        if((totalMin - usedMin) < 0) {
+            document.getElementById('taskBar').innerText = `超時 ${Math.abs(totalMin - usedMin)} 分`;
             document.getElementById('taskBar').style.background = "linear-gradient(135deg, #ff7675, #d63031)";
             document.getElementById('freeBar').innerText = "";
-        } else {
-            document.getElementById('taskBar').innerText = usedPct > 5 ? `已排程: ${usedMin}分` : '';
-            document.getElementById('taskBar').style.background = "linear-gradient(135deg, #74b9ff, #0984e3)";
-            document.getElementById('freeBar').innerText = totalMin - usedMin > 0 ? `放空: ${totalMin - usedMin}分` : '';
-            document.getElementById('freeBar').style.background = "linear-gradient(135deg, #55efc4, #00b894)";
-        }
+        } else { document.getElementById('taskBar').style.background = "linear-gradient(135deg, #74b9ff, #0984e3)"; }
 
         for(let i=1; i<=3; i++) {
             let rem = pTotal[i-1] - pUsed[i-1], el = document.getElementById(`rem-${i}`);
-            if(pTotal[i-1] === 0 && pUsed[i-1] === 0) { el.innerText = "未設定時間"; el.style.background = "#dfe6e9"; el.style.color = "#636e72"; }
+            if(pTotal[i-1] === 0 && pUsed[i-1] === 0) { el.innerText = "未排程"; el.style.background = "#dfe6e9"; el.style.color = "#636e72"; }
             else if (rem < 0) { el.innerText = `⚠️ 超時 ${Math.abs(rem)} 分`; el.style.background = "#ff7675"; el.style.color = "#fff"; }
             else { el.innerText = `放空 ${rem} 分`; el.style.background = "#55efc4"; el.style.color = "#2d3436"; }
         }
     }
 
-    // --- ⚙️ 系統設定頁邏輯 (含狀態切換) ---
+    // --- ⚙️ 系統設定後台功能 ---
     function previewProjectCalc() {
         let goal = parseInt(document.getElementById('new-proj-goal').value) || 0;
-        let start = new Date(document.getElementById('new-proj-start').value);
-        let end = new Date(document.getElementById('new-proj-deadline').value);
+        let startStr = document.getElementById('new-proj-start').value;
+        let days = parseInt(document.getElementById('new-proj-days').value) || 0;
         let pvw = document.getElementById('proj-calc-preview');
         
-        if(goal > 0 && !isNaN(start) && !isNaN(end) && start <= end) {
-            let days = Math.floor((end - start) / 86400000) + 1;
+        if(goal > 0 && startStr && days > 0) {
             let avg = (goal / days).toFixed(1);
-            if(avg.endsWith('.0')) avg = avg.slice(0, -2);
-            pvw.innerText = `📊 總計 ${goal}，預計執行 ${days} 天，平均每日需推進 ${avg} 單位`;
-        } else {
-            pvw.innerText = `請輸入正確的目標數量與起訖日期以計算每日平均`;
-        }
+            pvw.innerText = `📊 試算結果：預計執行 ${days} 天，平均每日需推進 ${avg.replace('.0','')} 單位`;
+        } else { pvw.innerText = `請輸入正確的目標數量與執行天數以計算每日平均`; }
     }
 
     function submitProjectForm() {
@@ -759,56 +920,60 @@
         let domain = document.getElementById('new-proj-domain').value;
         let type = document.getElementById('new-proj-type').value;
         let goal = parseInt(document.getElementById('new-proj-goal').value);
-        let unit = document.getElementById('new-proj-unit').value.trim();
+        let unit = document.getElementById('new-proj-unit').value.trim() || '頁';
         let startDate = document.getElementById('new-proj-start').value;
-        let deadline = document.getElementById('new-proj-deadline').value;
+        let days = parseInt(document.getElementById('new-proj-days').value);
+        let ep = parseInt(document.getElementById('new-proj-ep').value) || 5;
 
-        if(!name || !goal || !unit || !startDate || !deadline || startDate > deadline) {
-            alert("請完整填寫專案的所有欄位，且結束日必須大於或等於開始日！"); return;
-        }
+        if(!name || isNaN(goal) || !startDate || isNaN(days) || days <= 0 || goal <= 0) { alert("請完整填寫專案的所有欄位項目！"); return; }
+        
+        let endDate = new Date(startDate); endDate.setDate(endDate.getDate() + days - 1);
+        let deadline = endDate.toISOString().split('T')[0];
+        let projObj = { name, domain, type, totalGoal: goal, unit, startDate, deadline, duration: days, status: 'active', ep };
 
         if(editingProjectIdx === -1) {
             if(appData.projects.some(p => p.name === name)) { alert("這個專案名稱已經存在囉！"); return; }
-            appData.projects.push({ name, domain, type, totalGoal: goal, unit, startDate, deadline, status: 'active' });
-            if(!appData.domainOptions[domain].some(o => o.name === name)) {
-                appData.domainOptions[domain].push({ type, name, memo: "★ 長期專案" });
-            }
+            projObj.id = generateUUID();
+            appData.projects.push(projObj);
+            appData.domainOptions[domain].push({ id: projObj.id, type, name, memo: "★專案", hidden: false, ep });
         } else {
-            if(appData.projects.some((p, i) => p.name === name && i !== editingProjectIdx)) {
-                alert("這個專案名稱已經存在囉！請換一個名稱。"); return;
-            }
+            if(appData.projects.some((p, i) => p.name === name && i !== editingProjectIdx)) { alert("這個專案名稱已經存在。"); return; }
             let oldP = appData.projects[editingProjectIdx];
-            let oldOptIdx = appData.domainOptions[oldP.domain].findIndex(o => o.name === oldP.name);
-            if(oldOptIdx > -1) appData.domainOptions[oldP.domain].splice(oldOptIdx, 1);
+            projObj.status = oldP.status;
+            projObj.id = oldP.id;
             
-            if(!appData.domainOptions[domain].some(o => o.name === name) && oldP.status === 'active') {
-                appData.domainOptions[domain].push({ type, name, memo: "★ 長期專案" });
-            }
+            let oldOptIdx = appData.domainOptions[oldP.domain].findIndex(o => o.id === oldP.id || (o.name === oldP.name && o.memo === "★專案"));
+            if(oldOptIdx > -1) appData.domainOptions[oldP.domain].splice(oldOptIdx, 1);
+            appData.domainOptions[domain].push({ id: projObj.id, type, name, memo: "★專案", hidden: (oldP.status === 'completed'), ep });
 
-            Object.values(appData.days).forEach(day => {
-                if(day.tasks) {
-                    day.tasks.forEach(t => {
-                        if(t.progress === oldP.name) { t.progress = name; t.name = domain; t.type = type; }
-                    });
-                }
-            });
-
-            appData.projects[editingProjectIdx] = { name, domain, type, totalGoal: goal, unit, startDate, deadline, status: oldP.status };
-            alert(`已成功將專案更新為「${name}」，歷史排程也已經同步連動！`);
+            // 移除強制遍歷歷史資料的覆寫機制，保留真實數據
+            appData.projects[editingProjectIdx] = projObj;
         }
-
         saveData(); clearProjectForm(); renderSettings(); loadDayToDOM(currentDateStr); renderCalendar();
     }
 
     function editProject(idx) {
+        alert("提示：修改好的名稱與設定會套用到專案本身，過去的歷史紀錄將保留原始名稱。");
+        
         editingProjectIdx = idx; let p = appData.projects[idx];
-        document.getElementById('new-proj-name').value = p.name;
+        
+        let nameInput = document.getElementById('new-proj-name');
+        nameInput.value = p.name;
+        if(p.status === 'completed') {
+            nameInput.disabled = true;
+            nameInput.style.backgroundColor = '#f1f2f6';
+        } else {
+            nameInput.disabled = false;
+            nameInput.style.backgroundColor = '';
+        }
+
         document.getElementById('new-proj-domain').value = p.domain;
         document.getElementById('new-proj-type').value = p.type;
         document.getElementById('new-proj-goal').value = p.totalGoal;
         document.getElementById('new-proj-unit').value = p.unit;
         document.getElementById('new-proj-start').value = p.startDate;
-        document.getElementById('new-proj-deadline').value = p.deadline;
+        document.getElementById('new-proj-days').value = p.duration;
+        document.getElementById('new-proj-ep').value = p.ep || 5;
 
         document.getElementById('btn-submit-proj').innerText = "💾 儲存修改";
         document.getElementById('btn-submit-proj').style.background = "#00b894";
@@ -817,43 +982,48 @@
     }
 
     function clearProjectForm() {
-        document.getElementById('new-proj-name').value = ''; document.getElementById('new-proj-goal').value = ''; 
-        document.getElementById('new-proj-unit').value = ''; document.getElementById('proj-calc-preview').innerText = '請輸入目標數量與起訖日期以計算每日平均';
+        ['new-proj-name', 'new-proj-goal', 'new-proj-unit', 'new-proj-start', 'new-proj-days'].forEach(id => document.getElementById(id).value = '');
+        document.getElementById('new-proj-ep').value = '5';
+        
+        let nameInput = document.getElementById('new-proj-name');
+        nameInput.disabled = false;
+        nameInput.style.backgroundColor = '';
+
         editingProjectIdx = -1;
-        document.getElementById('btn-submit-proj').innerText = "➕ 新增";
+        document.getElementById('btn-submit-proj').innerText = "➕ 建立專案任務";
         document.getElementById('btn-submit-proj').style.background = "#0984e3";
         document.getElementById('btn-cancel-proj').style.display = "none";
+        document.getElementById('proj-calc-preview').innerText = '請輸入數據進行即時試算...';
     }
 
     function removeProject(idx) { 
-        if(confirm("確定要徹底刪除這個專案設定嗎？ (過去的歷史紀錄將退化為一般任務)")) {
+        if(confirm("確定要徹底刪除這個專案設定嗎？ (歷史紀錄將退化為一般常規內容)")) {
             let p = appData.projects[idx];
-            let optIdx = appData.domainOptions[p.domain].findIndex(o => o.name === p.name);
+            let optIdx = appData.domainOptions[p.domain].findIndex(o => o.id === p.id || (o.name === p.name && o.memo === "★專案"));
             if(optIdx > -1) appData.domainOptions[p.domain].splice(optIdx, 1);
-            
             appData.projects.splice(idx, 1); saveData(); renderSettings(); renderCalendar(); renderDatalists();
         }
     }
 
-    // 🏆 切換專案狀態 (結案 / 重啟)
     function toggleProjectStatus(idx) {
         let p = appData.projects[idx];
         if (p.status === 'active') {
-            if(confirm("即將將專案「結案」並送入榮譽殿堂！\n\n結案後，主控台的下拉選單將不再顯示此專案，以保持版面整潔。確定結案嗎？")) {
+            if(confirm(`確定要將專案「${p.name}」結案嗎？結案後將送入榮譽殿堂，並自動從下拉選單隱藏。`)) {
                 p.status = 'completed';
-                // 從下拉選單移除
-                let optIdx = appData.domainOptions[p.domain].findIndex(o => o.name === p.name);
-                if(optIdx > -1) appData.domainOptions[p.domain].splice(optIdx, 1);
+                let opt = appData.domainOptions[p.domain].find(o => o.id === p.id || (o.name === p.name && o.memo === "★專案"));
+                if(opt) opt.hidden = true;
             }
         } else {
             p.status = 'active';
-            // 加回下拉選單
-            if(!appData.domainOptions[p.domain].some(o => o.name === p.name)) {
-                appData.domainOptions[p.domain].push({ type: p.type, name: p.name, memo: "★ 長期專案" });
+            let opt = appData.domainOptions[p.domain].find(o => o.id === p.id || (o.name === p.name && o.memo === "★專案"));
+            if(opt) {
+                opt.hidden = false;
+            } else {
+                appData.domainOptions[p.domain].push({ id: p.id, type: p.type, name: p.name, memo: "★專案", hidden: false, ep: p.ep || 5 });
             }
-            alert(`已重啟專案「${p.name}」，它已重新加入主控台下拉選單！`);
+            alert(`已成功重啟專案「${p.name}」！`);
         }
-        saveData(); renderSettings(); renderCalendar(); renderDatalists();
+        saveData(); renderSettings(); renderCalendar(); renderDatalists(); loadDayToDOM(currentDateStr);
     }
 
     function renderSettings() {
@@ -864,106 +1034,157 @@
             <div class="domain-setting-block">
                 <h3 class="domain-title">📌 ${dom}</h3>
                 <div class="settings-input-group">
-                    <input type="text" class="opt-name" id="new-opt-${dIdx}" placeholder="輸入新的內容描述">
-                    <input type="text" class="opt-memo" id="new-memo-${dIdx}" placeholder="進度描述 (備註)">
-                    <button onclick="addDomainOption('${dom}', ${dIdx})">➕ 新增</button>
+                    <input type="text" class="opt-name" id="add-${dom}" placeholder="輸入新的內容描述">
+                    <input type="text" class="opt-memo" id="memo-${dom}" placeholder="進度描述 (備註)">
+                    EP：<input type="number" class="opt-ep" id="ep-${dom}" value="5" min="1" style="width:55px;">
+                    <button class="tab-btn" style="background:var(--success); color:white; padding:6px 15px;" onclick="addDomainOption('${dom}')">➕ 新增</button>
                 </div>
                 <ul class="settings-list">`;
             
             appData.domainOptions[dom].forEach((opt, oIdx) => { 
-                let memoHtml = opt.memo ? `<span style="color:#b2bec3; font-size:0.85rem; margin-left:10px;">(${opt.memo})</span>` : '';
-                let typeSelect = `
-                    <select class="settings-type-select" onchange="changeOptionType('${dom}', ${oIdx}, this.value)">
-                        <option value="指定" ${opt.type==='指定'?'selected':''}>指定</option>
-                        <option value="自主" ${opt.type==='自主'?'selected':''}>自主</option>
-                        <option value="其他" ${opt.type==='其他'?'selected':''}>其他</option>
-                    </select>
-                `;
-                html += `<li>
-                            <div>${typeSelect} ${opt.name} ${memoHtml}</div> 
-                            <div>
-                                <button class="btn-edit" onclick="editDomainOption('${dom}', ${oIdx})">✏️ 編輯</button>
-                                <button onclick="removeDomainOption('${dom}', ${oIdx})">刪除</button>
+                if (dom === editingDomain && oIdx === editingOptIdx) {
+                    // ✨ Inline 編輯模式
+                    html += `
+                        <li style="background:#fff3cd; border-color:#f1c40f;">
+                            <div class="edit-inline-row">
+                                <select id="edit-type-${dom}-${oIdx}" class="settings-type-select">
+                                    <option value="指定" ${opt.type==='指定'?'selected':''}>指定</option>
+                                    <option value="自主" ${opt.type==='自主'?'selected':''}>自主</option>
+                                    <option value="其他" ${opt.type==='其他'?'selected':''}>其他</option>
+                                </select>
+                                <input type="text" id="edit-name-${dom}-${oIdx}" value="${opt.name}" style="flex:2;">
+                                <input type="text" id="edit-memo-${dom}-${oIdx}" value="${opt.memo}" placeholder="備註" style="flex:1.5;">
+                                <span style="font-size:0.85rem; color:#636e72; font-weight:bold;">EP:</span>
+                                <input type="number" id="edit-ep-${dom}-${oIdx}" value="${opt.ep || 5}" min="1" style="width:50px;">
+                                <div style="display:flex; gap:5px; margin-left:auto;">
+                                    <button class="btn-status" style="background:#00b894;" onclick="saveEditDomainOption('${dom}', ${oIdx})">💾 儲存</button>
+                                    <button class="btn-del" style="background:#b2bec3; width:auto; padding:6px 10px;" onclick="cancelEditDomainOption()">❌</button>
+                                </div>
                             </div>
-                         </li>`; 
+                        </li>`;
+                } else {
+                    // 一般顯示模式
+                    let isProj = (opt.memo === "★專案");
+                    let memoHtml = opt.memo ? `<span style="color:#b2bec3; font-size:0.85rem; margin-left:10px;">(${opt.memo})</span>` : '';
+                    let epBadge = `<span style="background:#f1c40f; color:#fff; padding:2px 8px; border-radius:12px; font-size:0.8rem; margin-left:8px; font-weight:bold;">${opt.ep || 5} EP</span>`;
+                    let typeSelect = `<select class="settings-type-select" ${isProj ? 'disabled' : ''} onchange="changeOptionType('${dom}', ${oIdx}, this.value)"><option value="指定" ${opt.type==='指定'?'selected':''}>指定</option><option value="自主" ${opt.type==='自主'?'selected':''}>自主</option><option value="其他" ${opt.type==='其他'?'selected':''}>其他</option></select>`;
+                    let editBtn = isProj ? `<button class="btn-edit" style="background:#b2bec3; cursor:not-allowed;" onclick="alert('請至上方專案總管編輯')">🔒 鎖定</button>` : `<button class="btn-edit" onclick="startEditDomainOption('${dom}', ${oIdx})">✏️ 編輯</button>`;
+                    let delBtn = isProj ? `<button class="btn-del" style="background:#b2bec3; cursor:not-allowed;" onclick="alert('請至上方專案總管編輯')">🔒</button>` : `<button class="btn-del" onclick="removeDomainOption('${dom}', ${oIdx})">×</button>`;
+                    html += `<li>
+                                <div style="${opt.hidden?'opacity:0.4; text-decoration:line-through;':''}">${typeSelect} <span>${opt.name}</span> ${epBadge} ${memoHtml}</div> 
+                                <div>
+                                    <button class="btn-status" style="background:#b2bec3" onclick="toggleTaskVisibility('${dom}', ${oIdx})">${opt.hidden?'👁️ 顯示':'🙈 隱藏'}</button>
+                                    ${editBtn}
+                                    ${delBtn}
+                                </div>
+                            </li>`; 
+                }
             });
             html += `</ul></div>`; container.innerHTML += html;
         });
         renderDatalists();
     }
 
-    function editDomainOption(domain, oIdx) {
-        alert("提示：修改內容不會更改過去已經記錄好的任務，但會套用到未來的新排程！");
+    function toggleTaskVisibility(domain, oIdx) {
+        appData.domainOptions[domain][oIdx].hidden = !appData.domainOptions[domain][oIdx].hidden;
+        saveData(); renderSettings(); renderDatalists();
+    }
+
+    // ✨ 啟動 Inline 編輯模式
+    function startEditDomainOption(domain, oIdx) {
+        alert("提示：修改好的內容不會更改過去已經記錄好的任務，但會套用到未來的新排程！");
+        editingDomain = domain;
+        editingOptIdx = oIdx;
+        renderSettings();
+    }
+
+    function cancelEditDomainOption() {
+        editingDomain = null;
+        editingOptIdx = -1;
+        renderSettings();
+    }
+
+    // ✨ 儲存 Inline 編輯內容
+    function saveEditDomainOption(domain, oIdx) {
+        let newType = document.getElementById(`edit-type-${domain}-${oIdx}`).value;
+        let newName = document.getElementById(`edit-name-${domain}-${oIdx}`).value.trim();
+        let newMemo = document.getElementById(`edit-memo-${domain}-${oIdx}`).value.trim();
+        let newEp = parseInt(document.getElementById(`edit-ep-${domain}-${oIdx}`).value) || 5;
+
+        if (!newName) { alert("名稱不能為空白！"); return; }
+        if (appData.domainOptions[domain].some((o, i) => o.name === newName && i !== oIdx)) { alert("此內容描述已存在。"); return; }
+
         let currentOpt = appData.domainOptions[domain][oIdx];
-        
-        let newName = prompt("請輸入新的「內容描述」：", currentOpt.name);
-        if (newName === null) return; 
-        let newMemo = prompt("請輸入新的「進度描述(備註)」：", currentOpt.memo);
-        if (newMemo === null) return;
-        
-        let exists = appData.domainOptions[domain].some((o, i) => o.name === newName.trim() && i !== oIdx);
-        if(exists) { alert("此內容描述已經存在囉！請換一個名稱。"); return; }
-        
-        appData.domainOptions[domain][oIdx].name = newName.trim() || currentOpt.name;
-        appData.domainOptions[domain][oIdx].memo = newMemo.trim();
-        saveData(); renderSettings();
+        currentOpt.type = newType;
+        currentOpt.name = newName;
+        currentOpt.memo = newMemo;
+        currentOpt.ep = newEp;
+
+        editingDomain = null;
+        editingOptIdx = -1;
+        saveData(); 
+        renderSettings();
+        renderDatalists();
     }
 
     function renderProjects() {
         const list = document.getElementById('project-list'); list.innerHTML = '';
-        if(!appData.projects) appData.projects = [];
         appData.projects.forEach((p, idx) => {
-            let dStart = new Date(p.startDate); let dEnd = new Date(p.deadline);
-            let days = Math.floor((dEnd - dStart) / 86400000) + 1;
-            let avg = (p.totalGoal / days).toFixed(1); if(avg.endsWith('.0')) avg = avg.slice(0, -2);
+            const stats = getProjectLiveStats(p);
+            let isTargetMet = stats.accTotal >= p.totalGoal;
+            let hint = (isTargetMet && p.status === 'active') ? '<span style="background:#ff7675; color:white; padding:2px 8px; border-radius:12px; font-size:0.8rem; margin-left:8px; font-weight:bold; animation:pulse 1.5s infinite;">✨ 已完成，請結案</span>' : '';
+            let statusBtnHtml = p.status === 'active' ? `<button class="btn-status" style="background:var(--success)" onclick="toggleProjectStatus(${idx})">🏆 結案</button>` : `<button class="btn-status" style="background:#f39c12" onclick="toggleProjectStatus(${idx})">🔄 重啟</button>`;
             
-            let statusBtnHtml = p.status === 'active' 
-                ? `<button class="btn-status" onclick="toggleProjectStatus(${idx})">🏆 結案</button>`
-                : `<button class="btn-status completed" onclick="toggleProjectStatus(${idx})">🔄 重啟</button>`;
-            
-            let titleSty = p.status === 'completed' ? 'text-decoration:line-through; color:#b2bec3;' : '';
-
             list.innerHTML += `
-                <li style="border-left-color:#0984e3; flex-direction:column; align-items:flex-start;">
-                    <div style="display:flex; justify-content:space-between; width:100%; margin-bottom:5px;">
-                        <div style="${titleSty}"><span style="color:#0984e3; font-weight:bold;">[${p.type}] ${p.domain}</span> ${p.name}</div>
+                <li style="border-left-color:#0984e3; flex-direction:column; align-items:flex-start; margin-bottom:10px; padding:12px; background:#f8fafc; border-radius:10px;">
+                    <div style="display:flex; justify-content:space-between; width:100%; align-items:center;">
+                        <div style="${p.status==='completed'?'text-decoration:line-through; color:#b2bec3;':''}; font-weight:bold;"><span style="color:#0984e3;">[${p.type}] ${p.domain}</span> ${p.name} <span style="background:#f1c40f; color:#fff; padding:2px 8px; border-radius:12px; font-size:0.8rem; margin-left:8px;">${p.ep || 5} EP</span> ${hint}</div>
                         <div>
                             ${statusBtnHtml}
                             <button class="btn-edit" onclick="editProject(${idx})">✏️ 編輯</button>
-                            <button onclick="removeProject(${idx})">刪除</button>
+                            <button class="btn-del" onclick="removeProject(${idx})">×</button>
                         </div>
                     </div>
-                    <div style="color:#636e72; font-size:0.9rem;">
-                        📅 ${p.startDate} ~ ${p.deadline} (${days}天) | 🎯 總計: ${p.totalGoal} ${p.unit} | 📈 每日: ${avg} ${p.unit}
+                    <div style="color:#636e72; font-size:0.85rem; font-weight:bold; margin-top:4px;">
+                        📅 期程：${p.startDate} ~ ${p.deadline} (${p.duration}天) | 🎯 總目標量: ${p.totalGoal} ${p.unit}
                     </div>
-                </li>
-            `;
+                </li>`;
         });
     }
 
     function changeOptionType(domain, oIdx, newType) { appData.domainOptions[domain][oIdx].type = newType; saveData(); renderDatalists(); }
+    
+    // ✨ 新增時也抓取 EP 數值
+    function addDomainOption(domain) { 
+        const nameInput = document.getElementById('add-'+domain); 
+        const memoInput = document.getElementById('memo-'+domain);
+        const epInput = document.getElementById('ep-'+domain);
+        
+        const nameVal = nameInput.value.trim(); 
+        const memoVal = memoInput.value.trim();
+        const epVal = parseInt(epInput.value) || 5;
 
-    function addDomainOption(domain, dIdx) { 
-        const nameInput = document.getElementById(`new-opt-${dIdx}`); const memoInput = document.getElementById(`new-memo-${dIdx}`);
-        const nameVal = nameInput.value.trim(); const memoVal = memoInput.value.trim();
         if(nameVal) { 
-            const exists = appData.domainOptions[domain].some(o => o.name === nameVal);
-            if(!exists) { appData.domainOptions[domain].push({type: "指定", name: nameVal, memo: memoVal}); saveData(); renderSettings(); 
-            } else { alert("此內容描述已經存在囉！"); }
+            if(!appData.domainOptions[domain].some(o => o.name === nameVal)) { 
+                appData.domainOptions[domain].push({type: "指定", name: nameVal, memo: memoVal, hidden: false, ep: epVal}); 
+                saveData(); 
+                renderSettings(); 
+                nameInput.value=''; memoInput.value=''; epInput.value='5';
+            } else { 
+                alert("這個任務項目已經存在囉！"); 
+            }
         } 
     }
+    
+    function removeDomainOption(domain, oIdx) { if(confirm("確定刪除嗎？")) { appData.domainOptions[domain].splice(oIdx, 1); saveData(); renderSettings(); } }
 
-    function removeDomainOption(domain, oIdx) { appData.domainOptions[domain].splice(oIdx, 1); saveData(); renderSettings(); }
-
-    // Datalist 僅渲染「一般任務」與「Active狀態的專案任務」
     function renderDatalists() {
         const dlContainer = document.getElementById('datalists-container'); dlContainer.innerHTML = '';
         const types = ["指定", "自主", "其他"];
         domains.forEach((dom, dIdx) => { 
             types.forEach(type => {
                 let html = `<datalist id="dl-opt-${dIdx}-${type}">`; 
-                let filteredOpts = appData.domainOptions[dom].filter(o => o.type === type);
-                filteredOpts.forEach(opt => { html += `<option value="${opt.name}">`; }); 
+                appData.domainOptions[dom].filter(o => o.type === type && !o.hidden).forEach(opt => { html += `<option value="${opt.name}">`; }); 
                 html += `</datalist>`; dlContainer.innerHTML += html; 
             });
         });
