@@ -2,7 +2,7 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>假日實驗室 v16.13 - 敏捷導航版 (行動聚合)</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -22,20 +22,22 @@
             background-color: var(--bg-pattern); 
             margin: 0; padding: 0; color: var(--primary); 
             user-select: none;
-            padding-bottom: 100px;
+            height: 100dvh;
+            overflow: hidden;
         }
 
         .tab-nav { 
-            position: sticky; top: 0; z-index: 1000; 
-            display: flex; gap: 12px; justify-content: center; 
-            padding: 12px; background: rgba(255, 255, 255, 0.88); 
+            position: fixed; top: 0; left: 0; width: 100%; z-index: 1000; box-sizing: border-box;
+            height: 60px;
+            display: flex; gap: 12px; justify-content: center; align-items: center;
+            padding: 0 12px; background: rgba(255, 255, 255, 0.88); 
             backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
             border-bottom: 1px solid rgba(0,0,0,0.05);
             box-shadow: 0 4px 10px rgba(0,0,0,0.02);
         }
 
         .tab-btn { 
-            padding: 10px 20px; border-radius: 50px; font-weight: 700; 
+            padding: 8px 20px; border-radius: 50px; font-weight: 700; 
             font-size: 1.05rem; cursor: pointer; border: 2px solid transparent; 
             background: #f1f2f6; color: #636e72; transition: all 0.3s ease;
         }
@@ -45,7 +47,16 @@
             box-shadow: 0 6px 15px rgba(0,206,201,0.25); transform: translateY(-1px);
         }
 
-        .main-wrapper { max-width: 950px; margin: 20px auto; padding: 0 15px; }
+        .main-wrapper { 
+            max-width: 950px; 
+            margin: 60px auto 0; 
+            padding: 20px 15px 90px 15px; 
+            height: calc(100dvh - 60px);
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            box-sizing: border-box;
+        }
+
         .container { 
             background: rgba(255, 255, 255, 0.98); 
             padding: 25px; border-radius: 25px; 
@@ -194,7 +205,7 @@
         .goal-item.done span { text-decoration: line-through; color: #b2bec3; }
         .goal-item span { font-weight: bold; font-size: 1.05rem; flex-grow: 1; }
 
-        .ep-footer { position: fixed; bottom: 0; left: 0; width: 100%; height: 70px; background: var(--primary); display: flex; justify-content: center; align-items: center; z-index: 1001; border-top: 4px solid #636e72; }
+        .ep-footer { position: fixed; bottom: 0; left: 0; width: 100%; height: 70px; background: var(--primary); display: flex; justify-content: center; align-items: center; z-index: 1001; border-top: 4px solid #636e72; box-sizing: border-box; }
         .ep-content { display: flex; align-items: center; justify-content: center; gap: 5px; background: rgba(255, 255, 255, 0.15); padding: 5px 30px; border-radius: 50px; border: 1px solid rgba(255, 255, 255, 0.3); }
         .ep-score { font-size: 2rem; font-weight: 800; color: var(--ep-color); text-shadow: 0 0 15px rgba(241, 196, 15, 0.8); }
         
