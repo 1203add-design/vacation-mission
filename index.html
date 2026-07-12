@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>假日實驗室 v16.6 - 敏捷導航版 (修復更新)</title>
+    <title>假日實驗室 v16.9 - 敏捷導航版 (介面優化)</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Urbanist:wght@400;500;700&family=Noto+Sans+TC:wght@400;700&display=swap" rel="stylesheet">
@@ -25,7 +25,6 @@
             padding-bottom: 100px;
         }
 
-        /* 1. 全域頂部導覽列固定 (Sticky Header) */
         .tab-nav { 
             position: sticky; top: 0; z-index: 1000; 
             display: flex; gap: 12px; justify-content: center; 
@@ -54,7 +53,6 @@
             margin-bottom: 25px;
         }
 
-        /* 2. 每日主控台面板 */
         .quote-box { 
             min-height: 45px; text-align: center; color: var(--success); 
             font-weight: 700; font-size: 1.1rem; margin-bottom: 15px;
@@ -116,23 +114,23 @@
 
         .check-box { width: 22px; height: 22px; cursor: pointer; flex-shrink: 0; accent-color: #00b894; }
         .type-select { width: 68px; background: #f8f9fa; flex-shrink: 0; }
-        .name-select { width: 125px; flex-shrink: 0; }
+        .name-select { width: 105px; flex-shrink: 0; }
         .progress-input { flex: 3; min-width: 110px; } 
         .task-stage-input { flex: 2; min-width: 90px; border-color: #ffeaa7; } 
-        .task-time-input { width: 52px; text-align: center; color: #d63031; flex-shrink: 0; }
+        .task-time-input { width: 40px; text-align: center; color: #d63031; flex-shrink: 0; }
         .period-select { width: 65px; background: #f1f2f6; color: #636e72; flex-shrink: 0; padding: 6px 4px; }
         .btn-del { background: #ff7675; color: white; border: none; border-radius: 8px; width: 30px; height: 30px; cursor: pointer; font-weight: bold; flex-shrink: 0; transition: 0.2s; }
         .btn-del:active { transform: scale(0.9); }
 
-        .proj-container { display: none; align-items: center; gap: 3px; flex-shrink: 0; }
-        .proj-val-input { width: 50px; padding: 6px; border: 1px solid #00cec9; border-radius: 8px; font-weight: bold; color:#0984e3; text-align: center; }
+        .proj-container { display: none; align-items: center; gap: 3px; flex: 2; min-width: 90px; }
+        .proj-val-input { flex: 1; padding: 6px; border: 1px solid #00cec9; border-radius: 8px; font-weight: bold; color:#0984e3; text-align: center; min-width: 50px; }
 
         @media (max-width: 768px) {
             .list-item { flex-wrap: wrap; padding: 12px; gap: 8px; }
             .name-select { flex-grow: 1; width: auto; }
             .progress-input { flex-basis: 100%; order: 3; margin-top: 2px; }
             .task-stage-input { flex: 1; order: 4; }
-            .proj-container { order: 5; }
+            .proj-container { flex: 1; order: 5; }
             .task-time-input { order: 6; }
             .period-select { order: 7; }
             .btn-del { order: 8; }
@@ -141,7 +139,6 @@
         .ex-check-box { width: 22px; height: 22px; cursor: pointer; flex-shrink: 0; accent-color: #e17055; }
         .ex-cost { width: 55px; text-align: center; font-size: 0.85rem !important; padding: 6px 4px !important; }
 
-        /* 3. 實驗導航圖 (月曆) */
         .calendar-month-block { background: #fff; border: 2px solid #dfe6e9; border-radius: 15px; padding: 15px; margin-bottom: 20px; }
         .calendar-month-title { font-size: 1.2rem; color: #2d3436; border-bottom: 2px dashed #b2bec3; padding-bottom: 10px; margin-top: 0; margin-bottom: 15px; font-weight: bold; text-align: center; }
         .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; }
@@ -154,7 +151,6 @@
         .cal-day.status-done { background: #e8f8f5; border-color: #00cec9; color: #00b894; }
         .cal-day.active { box-shadow: 0 0 0 3px #fdcb6e; }
 
-        /* 4. 看板與後台設定 */
         .project-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 15px; margin-top: 15px; }
         .project-card { background: white; border-radius: 18px; padding: 15px; border: 1px solid #f1f2f6; border-left: 6px solid var(--afternoon-text); box-shadow: 0 4px 10px rgba(0,0,0,0.02); }
         .project-card.achieved { border-color: var(--success); animation: glow 2s infinite; }
@@ -185,7 +181,6 @@
         .settings-list li > div:last-child { display: flex; gap: 5px; flex-shrink: 0; }
         .settings-list button { background: #ff7675; color: white; border: none; border-radius: 6px; padding: 6px 10px; cursor: pointer; font-weight: bold; transition: 0.2s; font-size: 0.85rem; }
         
-        /* Inline 編輯區塊的樣式 */
         .edit-inline-row { display: flex; gap: 8px; width: 100%; align-items: center; flex-wrap: wrap; }
         .edit-inline-row input { padding: 8px; }
 
@@ -347,22 +342,25 @@
         <span style="color:#bdc3c7; font-weight:bold; font-size:0.95rem;">總累積能量 EP</span>
         <span id="epScore" class="ep-score">0</span>
     </div>
+    <div style="position: absolute; right: 20px; display: flex; gap: 8px;">
+        <button class="tab-btn" style="background:#2d3436; color:#dfe6e9; border:1px solid #636e72; padding:6px 12px; font-size:0.85rem;" onclick="exportData()">💾 匯出</button>
+        <label class="tab-btn" style="background:#2d3436; color:#dfe6e9; border:1px solid #636e72; padding:6px 12px; font-size:0.85rem; cursor:pointer; margin:0;">
+            📂 還原<input type="file" id="import-file" style="display:none;" accept=".json" onclick="if(!confirm('⚠️ 即將開啟檔案選擇器。載入備份將覆蓋現有資料，確定要繼續嗎？')) return false;" onchange="importData(event)">
+        </label>
+    </div>
 </footer>
 
 <div id="datalists-container"></div>
 
 <script>
-    // --- 輔助函式：本地化日期格式 (YYYY-MM-DD) ---
     function getLocalISODate(d) {
         return new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Taipei', year: 'numeric', month: '2-digit', day: '2-digit' }).format(d);
     }
 
-    // --- 輔助函式：UUID 生成器 ---
     function generateUUID() {
         return crypto.randomUUID ? crypto.randomUUID() : 'proj-' + Math.random().toString(36).substr(2, 9);
     }
 
-    // --- 輔助函式：特殊字元跳脫 (防 XSS) ---
     function escapeHTML(str) {
         if (str === null || str === undefined) return '';
         return String(str)
@@ -373,7 +371,6 @@
             .replace(/'/g, '&#39;');
     }
 
-    // --- 核心資料狀態管理 ---
     let appData = JSON.parse(localStorage.getItem('holidayLabData_v16.6')) || {
         ep: 0, startDate: "2026-07-01", endDate: "2026-08-30",
         goals: [], projects: [], 
@@ -389,7 +386,6 @@
         days: {} 
     };
 
-    // ✨ 歷史資料升級與相容機制：為舊資料補充 EP 與 UUID 主鍵設定
     if(!appData.projects) appData.projects = [];
     if(!appData.goals) appData.goals = [];
     appData.projects.forEach(p => { 
@@ -400,13 +396,11 @@
         }
         if(p.ep === undefined) p.ep = 5;
 
-        // 綁定專屬 UUID 主鍵
         if(!p.id) {
             p.id = generateUUID();
             let opt = appData.domainOptions[p.domain]?.find(o => o.name === p.name && o.memo === "★專案");
             if (opt) opt.id = p.id;
             
-            // 掃描起始日之後的歷史任務，賦予 UUID 主鍵
             Object.keys(appData.days).forEach(date => {
                 if (date >= p.startDate && appData.days[date].tasks) {
                     appData.days[date].tasks.forEach(t => {
@@ -426,7 +420,6 @@
             return opt;
         });
     });
-    // 確認歷史天數的任務也有獨立 EP 屬性避免錯亂
     Object.keys(appData.days).forEach(date => {
         if(appData.days[date].tasks) {
             appData.days[date].tasks.forEach(t => {
@@ -437,8 +430,8 @@
 
     let currentDateStr = appData.startDate; 
     let editingProjectIdx = -1;
-    let editingDomain = null;     // 記錄目前正在 inline 編輯的領域
-    let editingOptIdx = -1;       // 記錄目前正在 inline 編輯的項目索引
+    let editingDomain = null;     
+    let editingOptIdx = -1;       
     
     const domains = ["語文/閱讀", "數學/邏輯", "社會/人文", "自然/科技", "藝術", "健康/體育", "綜合"];
     const predefinedTasks = ["選擇領域...", ...domains, "其他"];
@@ -470,6 +463,42 @@
         }
     }
     
+    function exportData() {
+        const dataStr = JSON.stringify(appData, null, 2);
+        const blob = new Blob([dataStr], {type: "application/json"});
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        let d = new Date();
+        a.download = `HolidayLab_Backup_${d.getFullYear()}${String(d.getMonth()+1).padStart(2,'0')}${String(d.getDate()).padStart(2,'0')}.json`;
+        a.click();
+        URL.revokeObjectURL(url);
+        alert("✅ 備份檔案已成功匯出！請妥善保存。");
+    }
+
+    function importData(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            try {
+                const imported = JSON.parse(e.target.result);
+                if(imported.projects && imported.domainOptions) {
+                    appData = imported;
+                    saveData();
+                    alert("✅ 資料還原成功！系統將重新載入。");
+                    location.reload();
+                } else {
+                    alert("❌ 檔案格式不正確，還原失敗。");
+                }
+            } catch (err) {
+                alert("❌ 檔案解析失敗，請確認檔案格式是否正確。");
+            }
+            event.target.value = '';
+        };
+        reader.readAsText(file);
+    }
+
     function renderAll() { renderSettings(); renderGoals(); renderCalendar(); updateDailyQuote(currentDateStr); updateEP(); }
     function updateEP() { document.getElementById('epScore').innerText = appData.ep; }
 
@@ -513,15 +542,13 @@
         switchTab('view-main', document.querySelector('.tab-nav .tab-btn:nth-child(1)')); 
     }
 
-    // --- 幫助函式：查詢該任務目前設定的 EP 分數 ---
     function getTaskEP(domain, type, progressName) {
         if (!appData.domainOptions[domain]) return 5;
         let opt = appData.domainOptions[domain].find(o => o.name === progressName);
         if (opt && opt.ep !== undefined) return parseInt(opt.ep);
-        return 5; // 防呆預設值
+        return 5; 
     }
 
-    // --- 北極星目標 ---
     function renderGoals() {
         const list = document.getElementById('goals-list'); list.innerHTML = '';
         appData.goals.forEach((g, idx) => {
@@ -646,7 +673,6 @@
         });
     }
 
-    // --- 🏠 主控台渲染與互動 ---
     function loadDayToDOM(dateStr) {
         document.getElementById('display-date').innerText = getFormattedDate(dateStr);
         updateDailyQuote(dateStr);
@@ -721,10 +747,9 @@
         let d = new Date(currentDateStr); d.setDate(d.getDate() - 1); let yestStr = getLocalISODate(d);
         if(appData.days[yestStr]) {
             let clone = JSON.parse(JSON.stringify(appData.days[yestStr]));
-            // 複製到今天時，將完成狀態與專案進度重置，並且刪除被鎖定的 ep 屬性，讓它「向後生效」能抓取最新的 EP
             clone.tasks.forEach(t => { t.checked = false; t.completed = false; t.projValue = 0; delete t.ep; });
             clone.exchanges.forEach(e => { e.checked = false; e.completed = false; });
-            clone.dailyNote = ""; // 清空特別發現紀錄，避免誤植
+            clone.dailyNote = ""; 
             appData.days[currentDateStr] = clone; loadDayToDOM(currentDateStr); saveData(); alert("✅ 已成功複製前一日的排程版型！");
         } else { alert("⚠️ 昨日尚無排程資料。"); }
     }
@@ -742,7 +767,6 @@
         let projId = p.getAttribute('data-proj-id');
         let proj = appData.projects.find(pr => pr.name === val);
         
-        // 雙重判定：覆蓋優先，歷史 UUID 配對為輔
         if (proj) {
             p.setAttribute('data-proj-id', proj.id);
         } else if (projId && val !== '') {
@@ -754,24 +778,22 @@
         if(proj) {
             projContainer.style.display = 'flex';
             if(stageInput) stageInput.style.display = 'none';
-            inputEl.style.width = '120px'; inputEl.style.flexGrow = '0';
+            inputEl.style.flex = '3';
             inputEl.style.backgroundColor = '#e8f8f5'; inputEl.style.color = '#00b894';
-            valInput.style.width = '160px';
             
             if (proj.status === 'completed') {
                 valInput.placeholder = `(🎉已結案)`;
                 unitLabel.innerHTML = ``;
             } else {
                 const stats = getProjectLiveStats(proj);
-                valInput.placeholder = `專案，建議今日${stats.dailySuggest}${escapeHTML(proj.unit)}`;
+                valInput.placeholder = `建議:${stats.dailySuggest}${escapeHTML(proj.unit)}`;
                 unitLabel.innerHTML = ``;
             }
         } else {
             projContainer.style.display = 'none';
             if(stageInput) stageInput.style.display = 'inline-block';
-            inputEl.style.width = ''; inputEl.style.flexGrow = '1';
+            inputEl.style.flex = '3';
             inputEl.style.backgroundColor = ''; inputEl.style.color = '';
-            valInput.style.width = '65px';
         }
     }
 
@@ -795,7 +817,6 @@
         const div = document.createElement('div'); 
         div.className = `list-item ${t.completed ? 'completed' : ''}`; 
         
-        // 渲染時標記 UUID 與鎖定之 EP
         if(t.ep !== undefined) { div.setAttribute('data-locked-ep', t.ep); }
         div.setAttribute('data-proj-id', t.projId || '');
         
@@ -814,11 +835,11 @@
             
             <input type="text" class="task-stage-input" value="${escapeHTML(t.stageMemo || '')}" placeholder="進度說明..." oninput="saveDOMToDay()">
 
-            <div class="proj-container" style="display:none; align-items:center; gap:5px; margin-left:3px; margin-right:3px;">
-                <input type="number" class="proj-val-input" placeholder="數字" value="${t.projValue || ''}" style="width:65px; padding:6px; border:1px solid #00cec9; border-radius:8px; font-weight:bold; color:#0984e3;" min="0" oninput="saveAndCalculate()">
+            <div class="proj-container">
+                <input type="number" class="proj-val-input" placeholder="數字" value="${t.projValue || ''}" min="0" oninput="saveAndCalculate()">
                 <span class="proj-unit-label" style="font-size:0.85rem; font-weight:bold; color:#636e72;"></span>
             </div>
-            <input type="number" class="task-time-input" placeholder="分" value="${t.time || ''}" min="0" oninput="saveAndCalculate()">
+            <input type="number" class="task-time-input" placeholder="分" value="${t.time || ''}" min="0" max="999" oninput="saveAndCalculate()">
             
             <select class="period-select" onchange="sortTasks(); saveAndCalculate();">
                 <option value="1" ${t.period==='1'?'selected':''}>上午</option>
@@ -855,7 +876,6 @@
         let nameSel = p.querySelector('.name-select').value;
         let progInp = p.querySelector('.progress-input').value;
 
-        // 引入 UUID 綁定機制檢測結案狀態
         let projIdAttr = p.getAttribute('data-proj-id');
         let linkedProj = appData.projects.find(pr => pr.id === projIdAttr || pr.name === progInp);
 
@@ -928,7 +948,6 @@
         }
     }
 
-    // --- ⚙️ 系統設定後台功能 ---
     function previewProjectCalc() {
         let goal = parseInt(document.getElementById('new-proj-goal').value) || 0;
         let startStr = document.getElementById('new-proj-start').value;
@@ -972,7 +991,6 @@
             if(oldOptIdx > -1) appData.domainOptions[oldP.domain].splice(oldOptIdx, 1);
             appData.domainOptions[domain].push({ id: projObj.id, type, name, memo: "★專案", hidden: (oldP.status === 'completed'), ep });
 
-            // 移除強制遍歷歷史資料的覆寫機制，保留真實數據
             appData.projects[editingProjectIdx] = projObj;
         }
         saveData(); clearProjectForm(); renderSettings(); loadDayToDOM(currentDateStr); renderCalendar();
@@ -1061,7 +1079,7 @@
                 <h3 class="domain-title">📌 ${dom}</h3>
                 <div class="settings-input-group">
                     <input type="text" class="opt-name" id="add-${dom}" placeholder="輸入新的內容描述">
-                    <input type="text" class="opt-memo" id="memo-${dom}" placeholder="進度描述 (備註)">
+                    <input type="text" class="opt-memo" id="memo-${dom}" placeholder="備註">
                     EP：<input type="number" class="opt-ep" id="ep-${dom}" value="5" min="1" style="width:55px;">
                     <button class="tab-btn" style="background:var(--success); color:white; padding:6px 15px;" onclick="addDomainOption('${dom}')">➕ 新增</button>
                 </div>
@@ -1069,7 +1087,6 @@
             
             appData.domainOptions[dom].forEach((opt, oIdx) => { 
                 if (dom === editingDomain && oIdx === editingOptIdx) {
-                    // ✨ Inline 編輯模式
                     html += `
                         <li style="background:#fff3cd; border-color:#f1c40f;">
                             <div class="edit-inline-row">
@@ -1089,7 +1106,6 @@
                             </div>
                         </li>`;
                 } else {
-                    // 一般顯示模式
                     let isProj = (opt.memo === "★專案");
                     let memoHtml = opt.memo ? `<span style="color:#b2bec3; font-size:0.85rem; margin-left:10px;">(${escapeHTML(opt.memo)})</span>` : '';
                     let epBadge = `<span style="background:#f1c40f; color:#fff; padding:2px 8px; border-radius:12px; font-size:0.8rem; margin-left:8px; font-weight:bold;">${opt.ep || 5} EP</span>`;
@@ -1116,7 +1132,6 @@
         saveData(); renderSettings(); renderDatalists();
     }
 
-    // ✨ 啟動 Inline 編輯模式
     function startEditDomainOption(domain, oIdx) {
         alert("提示：修改好的內容不會更改過去已經記錄好的任務，但會套用到未來的新排程！");
         editingDomain = domain;
@@ -1130,7 +1145,6 @@
         renderSettings();
     }
 
-    // ✨ 儲存 Inline 編輯內容
     function saveEditDomainOption(domain, oIdx) {
         let newType = document.getElementById(`edit-type-${domain}-${oIdx}`).value;
         let newName = document.getElementById(`edit-name-${domain}-${oIdx}`).value.trim();
@@ -1180,7 +1194,6 @@
 
     function changeOptionType(domain, oIdx, newType) { appData.domainOptions[domain][oIdx].type = newType; saveData(); renderDatalists(); }
     
-    // ✨ 新增時也抓取 EP 數值
     function addDomainOption(domain) { 
         const nameInput = document.getElementById('add-'+domain); 
         const memoInput = document.getElementById('memo-'+domain);
