@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>假日實驗室 v16.9 - 敏捷導航版 (介面優化)</title>
+    <title>假日實驗室 v16.13 - 敏捷導航版 (行動聚合)</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Urbanist:wght@400;500;700&family=Noto+Sans+TC:wght@400;700&display=swap" rel="stylesheet">
@@ -114,8 +114,8 @@
 
         .check-box { width: 22px; height: 22px; cursor: pointer; flex-shrink: 0; accent-color: #00b894; }
         .type-select { width: 68px; background: #f8f9fa; flex-shrink: 0; }
-        .name-select { width: 105px; flex-shrink: 0; }
-        .progress-input { flex: 3; min-width: 110px; } 
+        .name-select { width: 70px; flex-shrink: 0; }
+        .progress-field { flex: 3; min-width: 110px; } 
         .task-stage-input { flex: 2; min-width: 90px; border-color: #ffeaa7; } 
         .task-time-input { width: 40px; text-align: center; color: #d63031; flex-shrink: 0; }
         .period-select { width: 65px; background: #f1f2f6; color: #636e72; flex-shrink: 0; padding: 6px 4px; }
@@ -128,7 +128,7 @@
         @media (max-width: 768px) {
             .list-item { flex-wrap: wrap; padding: 12px; gap: 8px; }
             .name-select { flex-grow: 1; width: auto; }
-            .progress-input { flex-basis: 100%; order: 3; margin-top: 2px; }
+            .progress-field { flex-basis: 100%; order: 3; margin-top: 2px; }
             .task-stage-input { flex: 1; order: 4; }
             .proj-container { flex: 1; order: 5; }
             .task-time-input { order: 6; }
@@ -350,15 +350,13 @@
     </div>
 </footer>
 
-<div id="datalists-container"></div>
-
 <script>
     function getLocalISODate(d) {
         return new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Taipei', year: 'numeric', month: '2-digit', day: '2-digit' }).format(d);
     }
 
     function generateUUID() {
-        return crypto.randomUUID ? crypto.randomUUID() : 'proj-' + Math.random().toString(36).substr(2, 9);
+        return crypto.randomUUID ? crypto.randomUUID() : 'opt-' + Math.random().toString(36).substr(2, 9);
     }
 
     function escapeHTML(str) {
@@ -386,6 +384,21 @@
         days: {} 
     };
 
+    function sortDomainOptions(domain) {
+        const typeWeight = { "指定": 1, "自主": 2, "其他": 3 };
+        appData.domainOptions[domain].sort((a, b) => {
+            let wA = typeWeight[a.type] || 99;
+            let wB = typeWeight[b.type] || 99;
+            if (wA !== wB) return wA - wB;
+            
+            let pA = (a.memo === "★專案") ? 1 : 2;
+            let pB = (b.memo === "★專案") ? 1 : 2;
+            if (pA !== pB) return pA - pB;
+            
+            return 0;
+        });
+    }
+
     if(!appData.projects) appData.projects = [];
     if(!appData.goals) appData.goals = [];
     appData.projects.forEach(p => { 
@@ -412,13 +425,15 @@
     });
     Object.keys(appData.domainOptions).forEach(dom => {
         appData.domainOptions[dom] = appData.domainOptions[dom].map(opt => {
-            if (typeof opt === 'string') return {type: "指定", name: opt, memo: "", hidden:false, ep: 5};
+            if (typeof opt === 'string') return {id: generateUUID(), type: "指定", name: opt, memo: "", hidden:false, ep: 5};
+            if (!opt.id) opt.id = generateUUID();
             if (!opt.type) opt.type = "指定"; 
             if (opt.memo === "★長期專案" || opt.memo === "★長期專案") opt.memo = "★專案";
             if (opt.hidden === undefined) opt.hidden = false;
             if (opt.ep === undefined) opt.ep = 5;
             return opt;
         });
+        sortDomainOptions(dom);
     });
     Object.keys(appData.days).forEach(date => {
         if(appData.days[date].tasks) {
@@ -431,10 +446,10 @@
     let currentDateStr = appData.startDate; 
     let editingProjectIdx = -1;
     let editingDomain = null;     
-    let editingOptIdx = -1;       
+    let editingOptId = null;       
     
     const domains = ["語文/閱讀", "數學/邏輯", "社會/人文", "自然/科技", "藝術", "健康/體育", "綜合"];
-    const predefinedTasks = ["選擇領域...", ...domains, "其他"];
+    const predefinedTasks = ["領域", ...domains, "其他"];
     
     const quotes = [
         "Focus is your superpower!\n專注驚人的超能力！", "Mistakes are just data.\n錯誤只是實驗數據。", 
@@ -461,6 +476,12 @@
             alert("⚠️ 儲存失敗：瀏覽器儲存空間已滿或處於無痕模式，系統無法存入進度資料！");
             console.error("LocalStorage Save Error:", e);
         }
+    }
+
+    function syncAndRenderDomains() {
+        domains.forEach(d => sortDomainOptions(d));
+        saveData();
+        renderSettings();
     }
     
     function exportData() {
@@ -691,14 +712,29 @@
         calculateTime();
     }
 
+    function saveAndCalculate() { 
+        refreshAllProjectBindings();
+        saveDOMToDay(); 
+        calculateTime(); 
+    }
+
     function saveDOMToDay() {
         let times = ['t_m_h','t_m_m','t_a_h','t_a_m','t_e_h','t_e_m'].map(id => parseInt(document.getElementById(id).value)||0);
         let dailyNote = document.getElementById('daily-note-input').value.trim();
         let tasks = [];
         document.querySelectorAll('#missionContainer .list-item').forEach(el => {
             let typeSel = el.querySelector('.type-select') ? el.querySelector('.type-select').value : '指定';
-            let nameSel = el.querySelector('.name-select') ? el.querySelector('.name-select').value : '選擇領域...';
-            let progInp = el.querySelector('.progress-input') ? el.querySelector('.progress-input').value : '';
+            let nameSel = el.querySelector('.name-select') ? el.querySelector('.name-select').value : '領域';
+            
+            let progSel = el.querySelector('.progress-select');
+            let progTxt = el.querySelector('.progress-input-text');
+            let progInp = '';
+            if (progTxt && progTxt.style.display !== 'none') {
+                progInp = progTxt.value.trim();
+            } else if (progSel && progSel.value !== '自訂...' && progSel.value !== '') {
+                progInp = progSel.value;
+            }
+
             let stageInp = el.querySelector('.task-stage-input');
             let valInp = el.querySelector('.proj-val-input'); 
             let timeInp = el.querySelector('.task-time-input');
@@ -734,8 +770,6 @@
         appData.days[currentDateStr] = { times, tasks, exchanges, dailyNote }; saveData();
     }
 
-    function saveAndCalculate() { saveDOMToDay(); calculateTime(); refreshAllProjectBindings(); }
-
     function copyYesterday() {
         let hasTimeInput = ['t_m_h','t_m_m','t_a_h','t_a_m','t_e_h','t_e_m'].some(id => (parseInt(document.getElementById(id).value) || 0) > 0);
         let hasTasks = document.querySelectorAll('#missionContainer .list-item').length > 0;
@@ -754,15 +788,26 @@
         } else { alert("⚠️ 昨日尚無排程資料。"); }
     }
 
-    function refreshAllProjectBindings() { document.querySelectorAll('#missionContainer .progress-input').forEach(el => checkProjectBinding(el)); }
+    function refreshAllProjectBindings() { document.querySelectorAll('#missionContainer .list-item').forEach(el => checkProjectBinding(el)); }
 
-    function checkProjectBinding(inputEl) {
-        const p = inputEl.closest('.list-item');
+    function checkProjectBinding(p) {
         const projContainer = p.querySelector('.proj-container');
         const unitLabel = p.querySelector('.proj-unit-label');
         const valInput = p.querySelector('.proj-val-input');
         const stageInput = p.querySelector('.task-stage-input');
-        const val = inputEl.value.trim();
+        
+        const progSel = p.querySelector('.progress-select');
+        const progTxt = p.querySelector('.progress-input-text');
+        
+        let val = '';
+        if (progTxt && progTxt.style.display !== 'none') {
+            val = progTxt.value.trim();
+        } else if (progSel && progSel.value !== '自訂...') {
+            val = progSel.value;
+        }
+        
+        let activeInput = (progTxt.style.display !== 'none') ? progTxt : progSel;
+        let hiddenInput = (progTxt.style.display !== 'none') ? progSel : progTxt;
         
         let projId = p.getAttribute('data-proj-id');
         let proj = appData.projects.find(pr => pr.name === val);
@@ -778,8 +823,8 @@
         if(proj) {
             projContainer.style.display = 'flex';
             if(stageInput) stageInput.style.display = 'none';
-            inputEl.style.flex = '3';
-            inputEl.style.backgroundColor = '#e8f8f5'; inputEl.style.color = '#00b894';
+            activeInput.style.backgroundColor = '#e8f8f5'; activeInput.style.color = '#00b894';
+            hiddenInput.style.backgroundColor = ''; hiddenInput.style.color = '';
             
             if (proj.status === 'completed') {
                 valInput.placeholder = `(🎉已結案)`;
@@ -792,17 +837,81 @@
         } else {
             projContainer.style.display = 'none';
             if(stageInput) stageInput.style.display = 'inline-block';
-            inputEl.style.flex = '3';
-            inputEl.style.backgroundColor = ''; inputEl.style.color = '';
+            activeInput.style.backgroundColor = ''; activeInput.style.color = '';
+            hiddenInput.style.backgroundColor = ''; hiddenInput.style.color = '';
         }
     }
 
     function handleTaskSelectChange(selectEl) {
-        const p = selectEl.parentElement; const typeVal = p.querySelector('.type-select').value;
-        const domainVal = p.querySelector('.name-select').value; const inputEl = p.querySelector('.progress-input');
-        const dIdx = domains.indexOf(domainVal);
-        if (dIdx !== -1) { inputEl.setAttribute('list', `dl-opt-${dIdx}-${typeVal}`); } else { inputEl.removeAttribute('list'); }
-        inputEl.value = ''; saveAndCalculate();
+        const p = selectEl.parentElement; 
+        p.removeAttribute('data-proj-id');
+        
+        const typeVal = p.querySelector('.type-select').value;
+        const domainVal = p.querySelector('.name-select').value; 
+        const progSel = p.querySelector('.progress-select');
+        const progTxt = p.querySelector('.progress-input-text');
+        
+        let optionsHtml = '<option value="">請選擇...</option>';
+        if (domainVal === '領域') {
+            domains.forEach(d => {
+                appData.domainOptions[d].filter(o => o.type === typeVal && !o.hidden).forEach(opt => {
+                    optionsHtml += `<option value="${escapeHTML(opt.name)}">${escapeHTML(opt.name)}</option>`;
+                });
+            });
+        } else if (appData.domainOptions[domainVal]) {
+            appData.domainOptions[domainVal].filter(o => o.type === typeVal && !o.hidden).forEach(opt => {
+                optionsHtml += `<option value="${escapeHTML(opt.name)}">${escapeHTML(opt.name)}</option>`;
+            });
+        }
+        optionsHtml += '<option value="自訂...">自訂...</option>';
+        progSel.innerHTML = optionsHtml;
+        
+        progSel.style.display = 'inline-block';
+        progTxt.style.display = 'none';
+        progTxt.value = '';
+        
+        saveAndCalculate();
+    }
+
+    function handleProgressSelectChange(selectEl) {
+        const p = selectEl.parentElement;
+        p.removeAttribute('data-proj-id');
+        
+        const progTxt = p.querySelector('.progress-input-text');
+        const nameSel = p.querySelector('.name-select');
+        const typeVal = p.querySelector('.type-select').value;
+
+        if (selectEl.value === '自訂...') {
+            nameSel.value = '領域';
+            selectEl.style.display = 'none';
+            progTxt.style.display = 'inline-block';
+            progTxt.focus();
+        } else if (selectEl.value !== '') {
+            let foundDomain = '領域';
+            for (let i = 0; i < domains.length; i++) {
+                let d = domains[i];
+                if (appData.domainOptions[d].some(o => o.name === selectEl.value && o.type === typeVal)) {
+                    foundDomain = d;
+                    break;
+                }
+            }
+            nameSel.value = foundDomain;
+        }
+        saveAndCalculate();
+    }
+
+    function handleProgressInputBlur(inputEl) {
+        const p = inputEl.parentElement;
+        p.removeAttribute('data-proj-id');
+        
+        if (inputEl.value.trim() === '') {
+            const progSel = p.querySelector('.progress-select');
+            inputEl.style.display = 'none';
+            inputEl.value = '';
+            progSel.style.display = 'inline-block';
+            progSel.selectedIndex = 0;
+            saveAndCalculate();
+        }
     }
 
     function sortTasks() {
@@ -820,8 +929,30 @@
         if(t.ep !== undefined) { div.setAttribute('data-locked-ep', t.ep); }
         div.setAttribute('data-proj-id', t.projId || '');
         
-        let isChecked = t.checked ? 'checked' : ''; let dIdx = domains.indexOf(t.name);
-        let listAttr = dIdx !== -1 ? `list="dl-opt-${dIdx}-${t.type || '指定'}"` : '';
+        let isChecked = t.checked ? 'checked' : ''; 
+        let dIdx = domains.indexOf(t.name);
+        
+        let optionsHtml = '<option value="">請選擇...</option>';
+        let foundMatch = false;
+        
+        if (t.name === '領域') {
+            domains.forEach(d => {
+                appData.domainOptions[d].filter(o => o.type === (t.type || '指定') && !o.hidden).forEach(opt => {
+                    let selected = (t.progress === opt.name) ? 'selected' : '';
+                    if (selected) foundMatch = true;
+                    optionsHtml += `<option value="${escapeHTML(opt.name)}" ${selected}>${escapeHTML(opt.name)}</option>`;
+                });
+            });
+        } else if (dIdx !== -1 && appData.domainOptions[t.name]) {
+            appData.domainOptions[t.name].filter(o => o.type === (t.type || '指定') && !o.hidden).forEach(opt => {
+                let selected = (t.progress === opt.name) ? 'selected' : '';
+                if (selected) foundMatch = true;
+                optionsHtml += `<option value="${escapeHTML(opt.name)}" ${selected}>${escapeHTML(opt.name)}</option>`;
+            });
+        }
+        
+        optionsHtml += '<option value="自訂...">自訂...</option>';
+        let useInput = (t.progress && t.progress !== '' && !foundMatch);
 
         div.innerHTML = `
             <input type="checkbox" class="check-box" onchange="handleTaskCheck(this)" ${isChecked}>
@@ -831,7 +962,11 @@
             <select class="name-select" onchange="handleTaskSelectChange(this)">
                 ${predefinedTasks.map(opt => `<option value="${opt}" ${t.name===opt?'selected':''}>${opt}</option>`).join('')}
             </select>
-            <input type="text" class="progress-input" ${listAttr} value="${escapeHTML(t.progress || '')}" placeholder="下拉或自填" oninput="saveAndCalculate()">
+            
+            <select class="progress-field progress-select" style="${useInput ? 'display:none;' : ''}" onchange="handleProgressSelectChange(this)">
+                ${optionsHtml}
+            </select>
+            <input type="text" class="progress-field progress-input-text" style="${useInput ? '' : 'display:none;'}" value="${useInput ? escapeHTML(t.progress) : ''}" placeholder="自訂內容..." oninput="this.parentElement.removeAttribute('data-proj-id'); saveAndCalculate()" onblur="handleProgressInputBlur(this)">
             
             <input type="text" class="task-stage-input" value="${escapeHTML(t.stageMemo || '')}" placeholder="進度說明..." oninput="saveDOMToDay()">
 
@@ -849,11 +984,11 @@
             <button class="btn-del" onclick="this.parentElement.remove(); saveAndCalculate();">×</button>
         `;
         document.getElementById('list-' + (t.period || 1)).appendChild(div);
-        checkProjectBinding(div.querySelector('.progress-input')); 
+        checkProjectBinding(div); 
     }
 
     function addNewTask() {
-        renderTaskToDOM({ checked: false, completed: false, type: '指定', name: '選擇領域...', progress: '', stageMemo: '', projValue: 0, time: 0, period: '1', projId: undefined });
+        renderTaskToDOM({ checked: false, completed: false, type: '指定', name: '領域', progress: '', stageMemo: '', projValue: 0, time: 0, period: '1', projId: undefined });
         saveAndCalculate();
     }
 
@@ -862,7 +997,7 @@
         let isChecked = e.checked ? 'checked' : '';
         div.innerHTML = `
             <input type="checkbox" class="ex-check-box" onchange="handleExchangeCheck(this)" ${isChecked}>
-            <input type="text" class="progress-input ex-name" placeholder="兌換項目" value="${escapeHTML(e.name || '')}" oninput="saveDOMToDay()">
+            <input type="text" class="progress-field ex-name" placeholder="兌換項目" value="${escapeHTML(e.name || '')}" oninput="saveDOMToDay()">
             <input type="number" class="task-time-input ex-cost" placeholder="需EP" value="${e.cost || ''}" oninput="saveDOMToDay()">
             <button class="btn-del" onclick="this.parentElement.remove(); saveDOMToDay();">×</button>
         `;
@@ -874,7 +1009,15 @@
         const p = chk.parentElement; 
         let typeSel = p.querySelector('.type-select').value;
         let nameSel = p.querySelector('.name-select').value;
-        let progInp = p.querySelector('.progress-input').value;
+        
+        let progSel = p.querySelector('.progress-select');
+        let progTxt = p.querySelector('.progress-input-text');
+        let progInp = '';
+        if (progTxt && progTxt.style.display !== 'none') {
+            progInp = progTxt.value.trim();
+        } else if (progSel && progSel.value !== '自訂...') {
+            progInp = progSel.value;
+        }
 
         let projIdAttr = p.getAttribute('data-proj-id');
         let linkedProj = appData.projects.find(pr => pr.id === projIdAttr || pr.name === progInp);
@@ -993,7 +1136,8 @@
 
             appData.projects[editingProjectIdx] = projObj;
         }
-        saveData(); clearProjectForm(); renderSettings(); loadDayToDOM(currentDateStr); renderCalendar();
+        syncAndRenderDomains();
+        clearProjectForm(); loadDayToDOM(currentDateStr); renderCalendar();
     }
 
     function editProject(idx) {
@@ -1045,7 +1189,7 @@
             let p = appData.projects[idx];
             let optIdx = appData.domainOptions[p.domain].findIndex(o => o.id === p.id || (o.name === p.name && o.memo === "★專案"));
             if(optIdx > -1) appData.domainOptions[p.domain].splice(optIdx, 1);
-            appData.projects.splice(idx, 1); saveData(); renderSettings(); renderCalendar(); renderDatalists();
+            appData.projects.splice(idx, 1); syncAndRenderDomains(); renderCalendar();
         }
     }
 
@@ -1067,7 +1211,7 @@
             }
             alert(`已成功重啟專案「${p.name}」！`);
         }
-        saveData(); renderSettings(); renderCalendar(); renderDatalists(); loadDayToDOM(currentDateStr);
+        syncAndRenderDomains(); renderCalendar(); loadDayToDOM(currentDateStr);
     }
 
     function renderSettings() {
@@ -1085,22 +1229,22 @@
                 </div>
                 <ul class="settings-list">`;
             
-            appData.domainOptions[dom].forEach((opt, oIdx) => { 
-                if (dom === editingDomain && oIdx === editingOptIdx) {
+            appData.domainOptions[dom].forEach((opt) => { 
+                if (dom === editingDomain && opt.id === editingOptId) {
                     html += `
                         <li style="background:#fff3cd; border-color:#f1c40f;">
                             <div class="edit-inline-row">
-                                <select id="edit-type-${dom}-${oIdx}" class="settings-type-select">
+                                <select id="edit-type-${dom}-${opt.id}" class="settings-type-select">
                                     <option value="指定" ${opt.type==='指定'?'selected':''}>指定</option>
                                     <option value="自主" ${opt.type==='自主'?'selected':''}>自主</option>
                                     <option value="其他" ${opt.type==='其他'?'selected':''}>其他</option>
                                 </select>
-                                <input type="text" id="edit-name-${dom}-${oIdx}" value="${escapeHTML(opt.name)}" style="flex:2;">
-                                <input type="text" id="edit-memo-${dom}-${oIdx}" value="${escapeHTML(opt.memo)}" placeholder="備註" style="flex:1.5;">
+                                <input type="text" id="edit-name-${dom}-${opt.id}" value="${escapeHTML(opt.name)}" style="flex:2;">
+                                <input type="text" id="edit-memo-${dom}-${opt.id}" value="${escapeHTML(opt.memo)}" placeholder="備註" style="flex:1.5;">
                                 <span style="font-size:0.85rem; color:#636e72; font-weight:bold;">EP:</span>
-                                <input type="number" id="edit-ep-${dom}-${oIdx}" value="${opt.ep || 5}" min="1" style="width:50px;">
+                                <input type="number" id="edit-ep-${dom}-${opt.id}" value="${opt.ep || 5}" min="1" style="width:50px;">
                                 <div style="display:flex; gap:5px; margin-left:auto;">
-                                    <button class="btn-status" style="background:#00b894;" onclick="saveEditDomainOption('${dom}', ${oIdx})">💾 儲存</button>
+                                    <button class="btn-status" style="background:#00b894;" onclick="saveEditDomainOption('${dom}', '${opt.id}')">💾 儲存</button>
                                     <button class="btn-del" style="background:#b2bec3; width:auto; padding:6px 10px;" onclick="cancelEditDomainOption()">❌</button>
                                 </div>
                             </div>
@@ -1109,13 +1253,13 @@
                     let isProj = (opt.memo === "★專案");
                     let memoHtml = opt.memo ? `<span style="color:#b2bec3; font-size:0.85rem; margin-left:10px;">(${escapeHTML(opt.memo)})</span>` : '';
                     let epBadge = `<span style="background:#f1c40f; color:#fff; padding:2px 8px; border-radius:12px; font-size:0.8rem; margin-left:8px; font-weight:bold;">${opt.ep || 5} EP</span>`;
-                    let typeSelect = `<select class="settings-type-select" ${isProj ? 'disabled' : ''} onchange="changeOptionType('${dom}', ${oIdx}, this.value)"><option value="指定" ${opt.type==='指定'?'selected':''}>指定</option><option value="自主" ${opt.type==='自主'?'selected':''}>自主</option><option value="其他" ${opt.type==='其他'?'selected':''}>其他</option></select>`;
-                    let editBtn = isProj ? `<button class="btn-edit" style="background:#b2bec3; cursor:not-allowed;" onclick="alert('請至上方專案總管編輯')">🔒 鎖定</button>` : `<button class="btn-edit" onclick="startEditDomainOption('${dom}', ${oIdx})">✏️ 編輯</button>`;
-                    let delBtn = isProj ? `<button class="btn-del" style="background:#b2bec3; cursor:not-allowed;" onclick="alert('請至上方專案總管編輯')">🔒</button>` : `<button class="btn-del" onclick="removeDomainOption('${dom}', ${oIdx})">×</button>`;
+                    let typeSelect = `<select class="settings-type-select" ${isProj ? 'disabled' : ''} onchange="changeOptionType('${dom}', '${opt.id}', this.value)"><option value="指定" ${opt.type==='指定'?'selected':''}>指定</option><option value="自主" ${opt.type==='自主'?'selected':''}>自主</option><option value="其他" ${opt.type==='其他'?'selected':''}>其他</option></select>`;
+                    let editBtn = isProj ? `<button class="btn-edit" style="background:#b2bec3; cursor:not-allowed;" onclick="alert('請至上方專案總管編輯')">🔒 鎖定</button>` : `<button class="btn-edit" onclick="startEditDomainOption('${dom}', '${opt.id}')">✏️ 編輯</button>`;
+                    let delBtn = isProj ? `<button class="btn-del" style="background:#b2bec3; cursor:not-allowed;" onclick="alert('請至上方專案總管編輯')">🔒</button>` : `<button class="btn-del" onclick="removeDomainOption('${dom}', '${opt.id}')">×</button>`;
                     html += `<li>
                                 <div style="${opt.hidden?'opacity:0.4; text-decoration:line-through;':''}">${typeSelect} <span>${escapeHTML(opt.name)}</span> ${epBadge} ${memoHtml}</div> 
                                 <div>
-                                    <button class="btn-status" style="background:#b2bec3" onclick="toggleTaskVisibility('${dom}', ${oIdx})">${opt.hidden?'👁️ 顯示':'🙈 隱藏'}</button>
+                                    <button class="btn-status" style="background:#b2bec3" onclick="toggleTaskVisibility('${dom}', '${opt.id}')">${opt.hidden?'👁️ 顯示':'🙈 隱藏'}</button>
                                     ${editBtn}
                                     ${delBtn}
                                 </div>
@@ -1124,47 +1268,47 @@
             });
             html += `</ul></div>`; container.innerHTML += html;
         });
-        renderDatalists();
     }
 
-    function toggleTaskVisibility(domain, oIdx) {
-        appData.domainOptions[domain][oIdx].hidden = !appData.domainOptions[domain][oIdx].hidden;
-        saveData(); renderSettings(); renderDatalists();
+    function toggleTaskVisibility(domain, optId) {
+        let opt = appData.domainOptions[domain].find(o => o.id === optId);
+        if(opt) opt.hidden = !opt.hidden;
+        syncAndRenderDomains();
     }
 
-    function startEditDomainOption(domain, oIdx) {
+    function startEditDomainOption(domain, optId) {
         alert("提示：修改好的內容不會更改過去已經記錄好的任務，但會套用到未來的新排程！");
         editingDomain = domain;
-        editingOptIdx = oIdx;
+        editingOptId = optId;
         renderSettings();
     }
 
     function cancelEditDomainOption() {
         editingDomain = null;
-        editingOptIdx = -1;
+        editingOptId = null;
         renderSettings();
     }
 
-    function saveEditDomainOption(domain, oIdx) {
-        let newType = document.getElementById(`edit-type-${domain}-${oIdx}`).value;
-        let newName = document.getElementById(`edit-name-${domain}-${oIdx}`).value.trim();
-        let newMemo = document.getElementById(`edit-memo-${domain}-${oIdx}`).value.trim();
-        let newEp = parseInt(document.getElementById(`edit-ep-${domain}-${oIdx}`).value) || 5;
+    function saveEditDomainOption(domain, optId) {
+        let newType = document.getElementById(`edit-type-${domain}-${optId}`).value;
+        let newName = document.getElementById(`edit-name-${domain}-${optId}`).value.trim();
+        let newMemo = document.getElementById(`edit-memo-${domain}-${optId}`).value.trim();
+        let newEp = parseInt(document.getElementById(`edit-ep-${domain}-${optId}`).value) || 5;
 
         if (!newName) { alert("名稱不能為空白！"); return; }
-        if (appData.domainOptions[domain].some((o, i) => o.name === newName && i !== oIdx)) { alert("此內容描述已存在。"); return; }
+        if (appData.domainOptions[domain].some(o => o.name === newName && o.id !== optId)) { alert("此內容描述已存在。"); return; }
 
-        let currentOpt = appData.domainOptions[domain][oIdx];
-        currentOpt.type = newType;
-        currentOpt.name = newName;
-        currentOpt.memo = newMemo;
-        currentOpt.ep = newEp;
+        let currentOpt = appData.domainOptions[domain].find(o => o.id === optId);
+        if(currentOpt) {
+            currentOpt.type = newType;
+            currentOpt.name = newName;
+            currentOpt.memo = newMemo;
+            currentOpt.ep = newEp;
+        }
 
         editingDomain = null;
-        editingOptIdx = -1;
-        saveData(); 
-        renderSettings();
-        renderDatalists();
+        editingOptId = null;
+        syncAndRenderDomains();
     }
 
     function renderProjects() {
@@ -1192,7 +1336,11 @@
         });
     }
 
-    function changeOptionType(domain, oIdx, newType) { appData.domainOptions[domain][oIdx].type = newType; saveData(); renderDatalists(); }
+    function changeOptionType(domain, optId, newType) { 
+        let opt = appData.domainOptions[domain].find(o => o.id === optId);
+        if(opt) opt.type = newType; 
+        syncAndRenderDomains(); 
+    }
     
     function addDomainOption(domain) { 
         const nameInput = document.getElementById('add-'+domain); 
@@ -1205,28 +1353,20 @@
 
         if(nameVal) { 
             if(!appData.domainOptions[domain].some(o => o.name === nameVal)) { 
-                appData.domainOptions[domain].push({type: "指定", name: nameVal, memo: memoVal, hidden: false, ep: epVal}); 
-                saveData(); 
-                renderSettings(); 
+                appData.domainOptions[domain].push({id: generateUUID(), type: "指定", name: nameVal, memo: memoVal, hidden: false, ep: epVal}); 
                 nameInput.value=''; memoInput.value=''; epInput.value='5';
+                syncAndRenderDomains();
             } else { 
                 alert("這個任務項目已經存在囉！"); 
             }
         } 
     }
     
-    function removeDomainOption(domain, oIdx) { if(confirm("確定刪除嗎？")) { appData.domainOptions[domain].splice(oIdx, 1); saveData(); renderSettings(); } }
-
-    function renderDatalists() {
-        const dlContainer = document.getElementById('datalists-container'); dlContainer.innerHTML = '';
-        const types = ["指定", "自主", "其他"];
-        domains.forEach((dom, dIdx) => { 
-            types.forEach(type => {
-                let html = `<datalist id="dl-opt-${dIdx}-${type}">`; 
-                appData.domainOptions[dom].filter(o => o.type === type && !o.hidden).forEach(opt => { html += `<option value="${escapeHTML(opt.name)}">`; }); 
-                html += `</datalist>`; dlContainer.innerHTML += html; 
-            });
-        });
+    function removeDomainOption(domain, optId) { 
+        if(confirm("確定刪除嗎？")) { 
+            appData.domainOptions[domain] = appData.domainOptions[domain].filter(o => o.id !== optId); 
+            syncAndRenderDomains(); 
+        } 
     }
 </script>
 
