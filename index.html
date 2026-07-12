@@ -29,15 +29,23 @@
         .tab-nav { 
             position: fixed; top: 0; left: 0; width: 100%; z-index: 1000; box-sizing: border-box;
             height: 60px;
-            display: flex; gap: 12px; justify-content: center; align-items: center;
-            padding: 0 12px; background: rgba(255, 255, 255, 0.88); 
+            display: flex; gap: 8px; justify-content: center; align-items: center;
+            padding: 0 10px; background: rgba(255, 255, 255, 0.88); 
             backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
             border-bottom: 1px solid rgba(0,0,0,0.05);
             box-shadow: 0 4px 10px rgba(0,0,0,0.02);
+            overflow-x: auto; white-space: nowrap;
         }
 
+        .ep-nav-item {
+            display: flex; align-items: center; gap: 6px; background: #fff3cd;
+            padding: 6px 14px; border-radius: 50px; border: 1px solid #ffeaa7;
+        }
+
+        .ep-nav-score { font-size: 1.15rem; font-weight: 900; color: #d35400; }
+
         .tab-btn { 
-            padding: 8px 20px; border-radius: 50px; font-weight: 700; 
+            padding: 8px 18px; border-radius: 50px; font-weight: 700; 
             font-size: 1.05rem; cursor: pointer; border: 2px solid transparent; 
             background: #f1f2f6; color: #636e72; transition: all 0.3s ease;
         }
@@ -50,7 +58,7 @@
         .main-wrapper { 
             max-width: 950px; 
             margin: 60px auto 0; 
-            padding: 20px 15px 90px 15px; 
+            padding: 20px 15px 20px 15px; 
             height: calc(100dvh - 60px);
             overflow-y: auto;
             -webkit-overflow-scrolling: touch;
@@ -145,6 +153,11 @@
             .task-time-input { order: 6; }
             .period-select { order: 7; }
             .btn-del { order: 8; }
+            
+            .tab-btn { padding: 6px 10px; font-size: 0.95rem; }
+            .ep-nav-item { padding: 4px 10px; }
+            .ep-nav-score { font-size: 1rem; }
+            .tab-nav { gap: 4px; padding: 0 4px; justify-content: flex-start; }
         }
 
         .ex-check-box { width: 22px; height: 22px; cursor: pointer; flex-shrink: 0; accent-color: #e17055; }
@@ -205,16 +218,16 @@
         .goal-item.done span { text-decoration: line-through; color: #b2bec3; }
         .goal-item span { font-weight: bold; font-size: 1.05rem; flex-grow: 1; }
 
-        .ep-footer { position: fixed; bottom: 0; left: 0; width: 100%; height: 70px; background: var(--primary); display: flex; justify-content: center; align-items: center; z-index: 1001; border-top: 4px solid #636e72; box-sizing: border-box; }
-        .ep-content { display: flex; align-items: center; justify-content: center; gap: 5px; background: rgba(255, 255, 255, 0.15); padding: 5px 30px; border-radius: 50px; border: 1px solid rgba(255, 255, 255, 0.3); }
-        .ep-score { font-size: 2rem; font-weight: 800; color: var(--ep-color); text-shadow: 0 0 15px rgba(241, 196, 15, 0.8); }
-        
         input.proj-val-input::placeholder { color: #a29bfe; font-weight: normal; font-size: 0.85rem; }
     </style>
 </head>
 <body>
 
 <nav class="tab-nav">
+    <div class="ep-nav-item">
+        <span style="font-size:0.85rem; font-weight:bold; color:#636e72;">總EP</span>
+        <span id="epScore" class="ep-nav-score">0</span>
+    </div>
     <div class="tab-btn active" onclick="switchTab('view-main', this)">🏠 每日主控台</div>
     <div class="tab-btn" onclick="switchTab('view-calendar', this)">🗺️ 實驗導航圖</div>
     <div class="tab-btn" onclick="switchTab('view-settings', this)">⚙️ 系統設定</div>
@@ -302,6 +315,13 @@
     </div>
 
     <div id="view-settings" class="container" style="display: none;">
+        <div style="display: flex; justify-content: flex-end; gap: 8px; margin-bottom: 20px;">
+            <button class="tab-btn" style="background:#2d3436; color:#dfe6e9; border:1px solid #636e72; padding:6px 12px; font-size:0.85rem;" onclick="exportData()">💾 匯出</button>
+            <label class="tab-btn" style="background:#2d3436; color:#dfe6e9; border:1px solid #636e72; padding:6px 12px; font-size:0.85rem; cursor:pointer; margin:0;">
+                📂 還原<input type="file" id="import-file" style="display:none;" accept=".json" onclick="if(!confirm('⚠️ 即將開啟檔案選擇器。載入備份將覆蓋現有資料，確定要繼續嗎？')) return false;" onchange="importData(event)">
+            </label>
+        </div>
+
         <h2 style="color:#0984e3; border-bottom:2px solid #eee; padding-bottom:10px;">📅 全域期程總管</h2>
         <div class="settings-date-range">
             全局假期開始：<input type="date" id="proj-start-date"> 
@@ -347,19 +367,6 @@
         <div id="settings-container"></div>
     </div>
 </div>
-
-<footer class="ep-footer">
-    <div class="ep-content">
-        <span style="color:#bdc3c7; font-weight:bold; font-size:0.95rem;">總累積能量 EP</span>
-        <span id="epScore" class="ep-score">0</span>
-    </div>
-    <div style="position: absolute; right: 20px; display: flex; gap: 8px;">
-        <button class="tab-btn" style="background:#2d3436; color:#dfe6e9; border:1px solid #636e72; padding:6px 12px; font-size:0.85rem;" onclick="exportData()">💾 匯出</button>
-        <label class="tab-btn" style="background:#2d3436; color:#dfe6e9; border:1px solid #636e72; padding:6px 12px; font-size:0.85rem; cursor:pointer; margin:0;">
-            📂 還原<input type="file" id="import-file" style="display:none;" accept=".json" onclick="if(!confirm('⚠️ 即將開啟檔案選擇器。載入備份將覆蓋現有資料，確定要繼續嗎？')) return false;" onchange="importData(event)">
-        </label>
-    </div>
-</footer>
 
 <script>
     function getLocalISODate(d) {
@@ -571,7 +578,7 @@
     function jumpToDate(dateStr) { 
         saveDOMToDay(); currentDateStr = dateStr; 
         loadDayToDOM(currentDateStr); 
-        switchTab('view-main', document.querySelector('.tab-nav .tab-btn:nth-child(1)')); 
+        switchTab('view-main', document.querySelector('.tab-nav .tab-btn:nth-child(2)')); 
     }
 
     function getTaskEP(domain, type, progressName) {
@@ -992,7 +999,7 @@
                 <option value="2" ${t.period==='2'?'selected':''}>下午</option>
                 <option value="3" ${t.period==='3'?'selected':''}>晚上</option>
             </select>
-            <button class="btn-del" onclick="this.parentElement.remove(); saveAndCalculate();">×</button>
+            <button class="btn-del" onclick="if(this.parentElement.classList.contains('completed')){alert('⚠️ 已勾選完成的任務無法直接刪除，請先解除勾選以退還EP。'); return;} this.parentElement.remove(); saveAndCalculate();">×</button>
         `;
         document.getElementById('list-' + (t.period || 1)).appendChild(div);
         checkProjectBinding(div); 
@@ -1010,7 +1017,7 @@
             <input type="checkbox" class="ex-check-box" onchange="handleExchangeCheck(this)" ${isChecked}>
             <input type="text" class="progress-field ex-name" placeholder="兌換項目" value="${escapeHTML(e.name || '')}" oninput="saveDOMToDay()">
             <input type="number" class="task-time-input ex-cost" placeholder="需EP" value="${e.cost || ''}" oninput="saveDOMToDay()">
-            <button class="btn-del" onclick="this.parentElement.remove(); saveDOMToDay();">×</button>
+            <button class="btn-del" onclick="if(this.parentElement.classList.contains('completed')){alert('⚠️ 已兌換的項目無法直接刪除，請先解除勾選以退還EP。'); return;} this.parentElement.remove(); saveDOMToDay();">×</button>
         `;
         document.getElementById('exchangeContainer').appendChild(div);
     }
