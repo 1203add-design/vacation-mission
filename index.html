@@ -144,27 +144,29 @@
         .proj-container { display: none; align-items: center; gap: 3px; flex: 2; min-width: 90px; }
         .proj-val-input { flex: 1; padding: 6px; border: 1px solid #00cec9; border-radius: 8px; font-weight: bold; color:#0984e3; text-align: center; min-width: 50px; }
 
-        @media (max-width: 768px) {
-    .list-item { flex-wrap: wrap; padding: 12px; gap: 8px; }
-    .name-select { flex-grow: 1; width: auto; }
-    .progress-field { flex-basis: 100%; order: 3; margin-top: 2px; }
-    .task-stage-input { flex: 1; order: 4; }
-    .proj-container { flex: 1; order: 5; }
-    .task-time-input { order: 6; }
-    .period-select { order: 7; }
-    .btn-del { order: 8; }
-    
-    .tab-btn { padding: 6px 10px; font-size: 0.95rem; }
-    .ep-nav-item { padding: 4px 10px; }
-    .ep-nav-score { font-size: 1rem; }
-    .tab-nav { gap: 4px; padding: 0 4px; justify-content: flex-start; }
-    
-    .settings-list li { flex-direction: column; align-items: flex-start; gap: 8px; }
-    .settings-list li > div:first-child { white-space: normal; flex-wrap: wrap; width: 100%; }
-    .settings-list li > div:last-child { width: 100%; justify-content: flex-end; }
-    #project-list li > div:first-child { flex-direction: column; align-items: flex-start !important; gap: 8px; }
-    #project-list li > div:first-child > div:last-child { width: 100%; justify-content: flex-end; }
-}
+@media (max-width: 768px) {
+            .list-item { flex-wrap: wrap; padding: 12px; gap: 8px; }
+            .name-select { flex-grow: 1; width: auto; }
+            .progress-field { flex-basis: 100%; order: 3; margin-top: 2px; }
+            .task-stage-input { flex: 1; order: 4; }
+            .proj-container { flex: 1; order: 5; }
+            .task-time-input { order: 6; }
+            .period-select { order: 7; }
+            .btn-del { order: 8; }
+            
+            .tab-btn { padding: 6px 10px; font-size: 0.95rem; }
+            .ep-nav-item { padding: 4px 10px; }
+            .ep-nav-score { font-size: 1rem; }
+            .tab-nav { gap: 4px; padding: 0 4px; justify-content: flex-start; }
+            
+            .settings-list li { flex-direction: column; align-items: flex-start; gap: 8px; }
+            .settings-list li > div:first-child { white-space: normal; flex-wrap: wrap; width: 100%; }
+            .settings-list li > div:last-child { width: 100%; justify-content: flex-end; flex-wrap: wrap; }
+            
+            #project-list li > div:first-child { flex-direction: column; align-items: flex-start !important; gap: 8px; }
+            #project-list li > div:first-child > div:first-child { white-space: normal; word-break: break-word; overflow-wrap: break-word; line-height: 1.5; width: 100%; }
+            #project-list li > div:first-child > div:last-child { width: 100%; justify-content: flex-end; display: flex; flex-wrap: wrap; gap: 5px; margin-top: 4px; }
+        }
 
         .ex-check-box { width: 22px; height: 22px; cursor: pointer; flex-shrink: 0; accent-color: #e17055; }
         .ex-cost { width: 55px; text-align: center; font-size: 0.85rem !important; padding: 6px 4px !important; }
