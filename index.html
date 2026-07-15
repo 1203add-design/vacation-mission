@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>假日實驗室</title>
+    <title>假日實驗室 v17.0 - 表格數據版 (行動聚合)</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Urbanist:wght@400;500;700&family=Noto+Sans+TC:wght@400;700&display=swap" rel="stylesheet">
@@ -359,6 +359,7 @@
                 <div style="display:flex; align-items:center; gap:4px;">天數:<input type="number" id="new-proj-days" style="width:50px; text-align:center;" min="1" oninput="previewProjectCalc()"></div>
                 <div style="display:flex; align-items:center; gap:4px;">EP:<input type="number" id="new-proj-ep" style="width:45px; text-align:center;" value="5" min="1"></div>
                 <div style="font-size:0.85rem; color:#636e72;">建議日產:<span id="new-proj-daily-suggest" style="color:#0984e3; font-weight:bold; margin-left:4px;">--</span></div>
+                <div style="display:flex; align-items:center; gap:4px; margin-left:10px;">備註:<input type="text" id="new-proj-memo" style="width:100px; padding:4px; border:1px solid #dfe6e9; border-radius:6px;" placeholder="選填"></div>
                 
                 <div style="display:flex; gap:8px; margin-left:auto; width:100%; justify-content:flex-end; margin-top:5px;">
                     <button id="btn-submit-proj" class="tab-btn" style="background:#0984e3; color:white; padding:6px 15px;" onclick="submitProjectForm()">➕ 新增</button>
@@ -548,7 +549,7 @@ function clearAllData() {
                 localStorage.removeItem('holidayLabData_v17.0');
                 localStorage.removeItem('holidayLabData_v16.6');
                 setTimeout(() => {
-                    alert("✅ 資料已清除，請妥善保存剛才下載的備份檔！系統即將重新載入。");
+                    alert("✅ 資料已清除，請妥善保存剛才下載的備份檔！系統即剛重新載入。");
                     location.reload();
                 }, 500); 
             }
@@ -1231,10 +1232,11 @@ function clearAllData() {
         let unit = document.getElementById('new-proj-unit').value.trim() || '頁';
         let days = parseInt(document.getElementById('new-proj-days').value);
         let ep = parseInt(document.getElementById('new-proj-ep').value) || 5;
+        let projMemo = document.getElementById('new-proj-memo').value.trim();
 
         if(!name || isNaN(goal) || isNaN(days) || days <= 0 || goal <= 0) { alert("請完整填寫專案的所有欄位項目！"); return; }
         
-        let projObj = { name, domain, type, totalGoal: goal, unit, duration: days, status: 'active', ep };
+        let projObj = { name, domain, type, totalGoal: goal, unit, duration: days, status: 'active', ep, projMemo };
 
         if(editingProjectIdx === -1) {
             if(appData.projects.some(p => p.name === name)) { alert("這個專案名稱已經存在囉！"); return; }
@@ -1278,6 +1280,7 @@ function clearAllData() {
         document.getElementById('new-proj-unit').value = p.unit;
         document.getElementById('new-proj-days').value = p.duration;
         document.getElementById('new-proj-ep').value = p.ep || 5;
+        document.getElementById('new-proj-memo').value = p.projMemo || '';
 
         document.getElementById('btn-submit-proj').innerText = "💾 儲存修改";
         document.getElementById('btn-submit-proj').style.background = "#00b894";
@@ -1286,7 +1289,10 @@ function clearAllData() {
     }
 
     function clearProjectForm() {
-        ['new-proj-name', 'new-proj-goal', 'new-proj-unit', 'new-proj-days'].forEach(id => document.getElementById(id).value = '');
+        ['new-proj-name', 'new-proj-goal', 'new-proj-unit', 'new-proj-days', 'new-proj-memo'].forEach(id => {
+            let el = document.getElementById(id);
+            if(el) el.value = '';
+        });
         document.getElementById('new-proj-ep').value = '5';
         document.getElementById('new-proj-daily-suggest').innerText = '--';
         
@@ -1360,6 +1366,7 @@ function clearAllData() {
                     <span style="white-space:nowrap;">🎯 總目標量: ${p.totalGoal} ${escapeHTML(p.unit)}</span>
                     <span style="white-space:nowrap;">⏳ 預計天數: ${p.duration} 天</span>
                     <span style="white-space:nowrap;">💡 建議: ${stats.dailySuggest} ${escapeHTML(p.unit)} / 天</span>
+                    ${p.projMemo ? `<span style="white-space:nowrap; color:#a29bfe;">📝 ${escapeHTML(p.projMemo)}</span>` : ''}
                 </div>                </li>`;
         });
     }
