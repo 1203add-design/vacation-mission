@@ -231,6 +231,12 @@
         .td-highlight { color: #0984e3; font-weight: bold; }
         .td-success { color: #00b894; font-weight: bold; }
         .td-warning { color: #d35400; font-weight: bold; }
+
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100dvh; background: rgba(0,0,0,0.5); z-index: 2000; justify-content: center; align-items: center; backdrop-filter: blur(3px); }
+        .modal-box { background: white; padding: 25px; border-radius: 20px; width: 90%; max-width: 400px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
+        .modal-title { margin-top: 0; color: #0984e3; font-size: 1.2rem; margin-bottom: 15px; border-bottom: 2px dashed #74b9ff; padding-bottom: 8px; }
+        .modal-select { width: 100%; padding: 10px; border: 2px solid #dfe6e9; border-radius: 10px; margin-bottom: 20px; font-size: 1rem; color: var(--primary); font-weight: bold; }
+        .modal-actions { display: flex; gap: 10px; justify-content: flex-end; }
     </style>
 </head>
 <body>
@@ -255,7 +261,7 @@
             <button class="tab-btn" style="padding:8px 15px;" onclick="navigateDate(-1)">◀ 前一天</button>
             <div style="text-align:center;">
                 <h2 class="current-date-title" id="display-date">115年7月1日</h2>
-                <button class="tab-btn" style="font-size:0.8rem; padding:5px 12px; margin-top:5px; background:#ffeaa7; color:#d35400;" onclick="copyYesterday()">📋 複製昨日計畫</button>
+                <button class="tab-btn" style="font-size:0.8rem; padding:5px 12px; margin-top:5px; background:#ffeaa7; color:#d35400;" onclick="copyFromDate()">📋 複製歷史計畫</button>
             </div>
             <button class="tab-btn" style="padding:8px 15px;" onclick="navigateDate(1)">後一天 ▶</button>
         </div>
@@ -346,37 +352,125 @@
             <h2 style="display: inline-block; color: #2d3436; border-bottom: 3px solid #0984e3; padding-bottom: 5px; margin: 0; letter-spacing: 2px;">🎯 專案總管</h2>
         </div>
         <div class="domain-setting-block" style="border: 2px dashed #0984e3; background: #f4fbff;">
-            <div class="settings-input-group">
-                <input type="text" id="new-proj-name" class="opt-name" placeholder="專案名稱 (例:閱讀哈利波特)">
-                <select id="new-proj-domain" class="settings-type-select" style="flex:1;">
-                    <option value="語文/閱讀">語文/閱讀</option><option value="數學/邏輯">數學/邏輯</option><option value="社會/人文">社會/人文</option>
-                    <option value="自然/科技">自然/科技</option><option value="藝術">藝術</option><option value="健康/體育">健康/體育</option><option value="綜合">綜合</option>
-                </select>
-                <select id="new-proj-type" class="settings-type-select" style="flex:1;">
-                    <option value="指定">指定</option><option value="自主" selected>自主</option>
-                </select>
+            <div style="display: flex; justify-content: flex-end; margin-bottom: 15px;">
+                <button class="tab-btn" style="background:#0984e3; color:white; padding:8px 20px;" onclick="openAddProjectModal()">➕ 新增專案</button>
             </div>
-            <div class="settings-input-group" style="background:#fff; padding:10px; border-radius:8px; border:1px solid #eee; display:flex; flex-wrap:wrap; gap:8px;">
-                <div style="display:flex; align-items:center; gap:4px;">總目標量:<input type="number" id="new-proj-goal" style="width:55px; text-align:center;" min="1" oninput="previewProjectCalc()"></div>
-                <div style="display:flex; align-items:center; gap:4px;">單位:<input type="text" id="new-proj-unit" style="width:45px; text-align:center;" placeholder="頁"></div>
-                <div style="display:flex; align-items:center; gap:4px;">天數:<input type="number" id="new-proj-days" style="width:50px; text-align:center;" min="1" oninput="previewProjectCalc()"></div>
-                <div style="display:flex; align-items:center; gap:4px;">EP:<input type="number" id="new-proj-ep" style="width:45px; text-align:center;" value="5" min="1"></div>
-                <div style="font-size:0.85rem; color:#636e72;">建議日產:<span id="new-proj-daily-suggest" style="color:#0984e3; font-weight:bold; margin-left:4px;">--</span></div>
-                <div style="display:flex; align-items:center; gap:4px; margin-left:10px;">備註:<input type="text" id="new-proj-memo" style="width:100px; padding:4px; border:1px solid #dfe6e9; border-radius:6px;" placeholder="選填"></div>
-                
-                <div style="display:flex; gap:8px; margin-left:auto; width:100%; justify-content:flex-end; margin-top:5px;">
-                    <button id="btn-submit-proj" class="tab-btn" style="background:#0984e3; color:white; padding:6px 15px;" onclick="submitProjectForm()">➕ 新增</button>
-                    <button id="btn-cancel-proj" class="tab-btn" style="background:#b2bec3; color:white; padding:6px 15px; display:none;" onclick="clearProjectForm()">❌ 取消</button>
-                </div>
-            </div>
-
             <ul class="settings-list" id="project-list"></ul>
         </div>
         
         <div style="text-align: center; margin: 30px 0 20px 0;">
-            <h2 style="display: inline-block; color: #2d3436; border-bottom: 3px solid #00cec9; padding-bottom: 5px; margin: 0; letter-spacing: 2px;">📝 領域內容設定</h2>
+            <h2 style="display: inline-block; color: #2d3436; border-bottom: 3px solid #00cec9; padding-bottom: 5px; margin: 0; letter-spacing: 2px;">📝 領域任務</h2>
         </div>
         <div id="settings-container"></div>
+    </div>
+</div>
+
+<!-- Modal 彈出視窗區塊 -->
+
+<div id="copyModal" class="modal-overlay">
+    <div class="modal-box">
+        <h3 class="modal-title">📋 選擇歷史計畫</h3>
+        <select id="copyDateSelect" class="modal-select"></select>
+        <div class="modal-actions">
+            <button class="tab-btn" style="background:#b2bec3; color:white; border:none;" onclick="closeCopyModal()">取消</button>
+            <button class="tab-btn" style="background:#00b894; color:white; border:none;" onclick="confirmCopy()">確認複製</button>
+        </div>
+    </div>
+</div>
+
+<div id="editProjectModal" class="modal-overlay">
+    <div class="modal-box" style="max-width: 500px;">
+        <h3 class="modal-title" style="margin-bottom: 8px;">✏️ 編輯專案</h3>
+        <div style="font-size: 0.85rem; color: #d63031; margin-bottom: 15px; font-weight: bold; background: #ffeaa7; padding: 6px; border-radius: 6px;">⚠️ 提示：修改後的設定將套用至專案本身，過去的歷史紀錄會保留原始名稱。</div>
+        <div style="display:flex; flex-direction:column; gap:10px; margin-bottom:15px;">
+            <div style="display:flex; gap:10px;">
+                <input type="text" id="edit-proj-name" style="flex:2;" placeholder="專案名稱" disabled>
+                <select id="edit-proj-domain" class="settings-type-select" style="flex:1; border: 1px solid #dfe6e9; border-radius: 8px;">
+                    <option value="語文/閱讀">語文/閱讀</option><option value="數學/邏輯">數學/邏輯</option><option value="社會/人文">社會/人文</option>
+                    <option value="自然/科技">自然/科技</option><option value="藝術">藝術</option><option value="健康/體育">健康/體育</option><option value="綜合">綜合</option>
+                </select>
+                <select id="edit-proj-type" class="settings-type-select" style="flex:1; border: 1px solid #dfe6e9; border-radius: 8px;">
+                    <option value="指定">指定</option><option value="自主">自主</option>
+                </select>
+            </div>
+            <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center; font-weight:bold; color:var(--primary);">
+                目標:<input type="number" id="edit-proj-goal" style="width:60px;" min="1">
+                單位:<input type="text" id="edit-proj-unit" style="width:50px;">
+                天數:<input type="number" id="edit-proj-days" style="width:60px;" min="1">
+                EP:<input type="number" id="edit-proj-ep" style="width:50px;" min="1">
+            </div>
+            <div style="display:flex; gap:10px; align-items:center; font-weight:bold; color:var(--primary);">
+                備註:<input type="text" id="edit-proj-memo" style="flex:1;" placeholder="選填">
+            </div>
+        </div>
+        <div class="modal-actions">
+            <button class="tab-btn" style="background:#b2bec3; color:white; border:none;" onclick="closeEditProjectModal()">取消</button>
+            <button class="tab-btn" style="background:#00b894; color:white; border:none;" onclick="saveEditProject()">儲存修改</button>
+        </div>
+    </div>
+</div>
+
+<div id="addProjectModal" class="modal-overlay">
+    <div class="modal-box" style="max-width: 500px;">
+        <h3 class="modal-title">🎯 新增專案</h3>
+        <div style="display:flex; flex-direction:column; gap:10px; margin-bottom:15px;">
+            <div style="display:flex; gap:10px;">
+                <input type="text" id="add-proj-name" style="flex:2;" placeholder="專案名稱 (例:閱讀哈利波特)">
+                <select id="add-proj-domain" class="settings-type-select" style="flex:1; border: 1px solid #dfe6e9; border-radius: 8px;">
+                    <option value="語文/閱讀">語文/閱讀</option><option value="數學/邏輯">數學/邏輯</option><option value="社會/人文">社會/人文</option>
+                    <option value="自然/科技">自然/科技</option><option value="藝術">藝術</option><option value="健康/體育">健康/體育</option><option value="綜合">綜合</option>
+                </select>
+                <select id="add-proj-type" class="settings-type-select" style="flex:1; border: 1px solid #dfe6e9; border-radius: 8px;">
+                    <option value="指定">指定</option><option value="自主" selected>自主</option>
+                </select>
+            </div>
+            <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center; font-weight:bold; color:var(--primary);">
+                目標:<input type="number" id="add-proj-goal" style="width:60px;" min="1" oninput="previewAddProjectCalc()">
+                單位:<input type="text" id="add-proj-unit" style="width:50px;" placeholder="頁">
+                天數:<input type="number" id="add-proj-days" style="width:60px;" min="1" oninput="previewAddProjectCalc()">
+                EP:<input type="number" id="add-proj-ep" style="width:50px;" value="5" min="1">
+            </div>
+            <div style="font-size:0.85rem; color:#636e72; font-weight:bold;">建議日產:<span id="add-proj-daily-suggest" style="color:#0984e3; margin-left:4px;">--</span></div>
+            <div style="display:flex; gap:10px; align-items:center; font-weight:bold; color:var(--primary);">
+                備註:<input type="text" id="add-proj-memo" style="flex:1;" placeholder="選填">
+            </div>
+        </div>
+        <div class="modal-actions">
+            <button class="tab-btn" style="background:#b2bec3; color:white; border:none;" onclick="closeAddProjectModal()">取消</button>
+            <button class="tab-btn" style="background:#0984e3; color:white; border:none;" onclick="submitProjectForm()">新增</button>
+        </div>
+    </div>
+</div>
+
+<div id="addDomainOptModal" class="modal-overlay">
+    <div class="modal-box">
+        <h3 class="modal-title" id="add-opt-title">➕ 新增領域內容</h3>
+        <div style="display:flex; flex-direction:column; gap:10px; margin-bottom:20px;">
+            <div style="display:flex; gap:8px;">
+                <select id="add-opt-type" class="settings-type-select" style="width:80px; border: 1px solid #dfe6e9; border-radius: 8px;">
+                    <option value="指定" selected>指定</option>
+                    <option value="自主">自主</option>
+                    <option value="其他">其他</option>
+                </select>
+                <input type="text" id="add-opt-name" placeholder="輸入新的內容描述" style="flex:1; box-sizing:border-box;">
+            </div>
+            <div style="display:flex; gap:10px;">
+                <input type="text" id="add-opt-memo" placeholder="備註 (選填)" style="flex:2;">
+                <div style="display:flex; align-items:center; gap:5px; flex:1;">
+                    <span style="font-weight:bold; color:#636e72;">EP:</span>
+                    <input type="number" id="add-opt-ep" value="5" min="1" style="width:100%;">
+                </div>
+            </div>
+        </div>
+        <div class="modal-actions">
+            <button class="tab-btn" style="background:#b2bec3; color:white; border:none;" onclick="closeAddDomainOptModal()">取消</button>
+            <button class="tab-btn" style="background:var(--success); color:white; border:none;" onclick="addDomainOption()">確認新增</button>
+        </div>
+    </div>
+</div>        <div class="modal-actions">
+            <button class="tab-btn" style="background:#b2bec3; color:white; border:none;" onclick="closeAddDomainOptModal()">取消</button>
+            <button class="tab-btn" style="background:var(--success); color:white; border:none;" onclick="addDomainOption()">確認新增</button>
+        </div>
     </div>
 </div>
 
@@ -473,6 +567,7 @@
     let editingProjectIdx = -1;
     let editingDomain = null;     
     let editingOptId = null;       
+    let currentAddingDomain = '';
     
     const domains = ["語文/閱讀", "數學/邏輯", "社會/人文", "自然/科技", "藝術", "健康/體育", "綜合"];
     const predefinedTasks = [...domains, "其他"];
@@ -490,6 +585,14 @@
     window.onload = function() { 
         document.getElementById('proj-start-date').value = appData.startDate;
         document.getElementById('proj-end-date').value = appData.endDate;
+        
+        let todayStr = getLocalISODate(new Date());
+        if (todayStr >= appData.startDate && todayStr <= appData.endDate) {
+            currentDateStr = todayStr;
+        } else {
+            currentDateStr = appData.startDate;
+        }
+        
         renderAll();
         loadDayToDOM(currentDateStr);
     };
@@ -545,7 +648,8 @@
         };
         reader.readAsText(file);
     }
-function clearAllData() {
+
+    function clearAllData() {
         if (confirm("⚠️ 警告：即將清除系統內所有設定與進度資料！\n\n系統會先自動幫您匯出一份備份檔。\n確定要繼續執行嗎？")) {
             if (confirm("🚨 二次確認：此操作絕對不可逆！\n\n按下「確定」後，將立即匯出 JSON 備份並徹底清空所有資料！")) {
                 exportData(); 
@@ -904,7 +1008,7 @@ function clearAllData() {
         appData.days[currentDateStr] = { times, tasks, exchanges, dailyNote }; saveData();
     }
 
-    function copyYesterday() {
+   function copyFromDate() {
         let hasTimeInput = ['t_m_h','t_m_m','t_a_h','t_a_m','t_e_h','t_e_m'].some(id => (parseInt(document.getElementById(id).value) || 0) > 0);
         let hasTasks = document.querySelectorAll('#missionContainer .list-item').length > 0;
         
@@ -912,14 +1016,58 @@ function clearAllData() {
             if (!confirm("⚠️ 今日已填寫膠囊時間或建立實驗任務。執行複製將徹底覆寫畫面中所有設定，確定要繼續嗎？")) return;
         }
         
-        let d = new Date(currentDateStr); d.setDate(d.getDate() - 1); let yestStr = getLocalISODate(d);
-        if(appData.days[yestStr]) {
-            let clone = JSON.parse(JSON.stringify(appData.days[yestStr]));
-            clone.tasks.forEach(t => { t.checked = false; t.completed = false; t.projValue = 0; delete t.ep; });
-            clone.exchanges.forEach(e => { e.checked = false; e.completed = false; });
-            clone.dailyNote = ""; 
-            appData.days[currentDateStr] = clone; loadDayToDOM(currentDateStr); saveData(); alert("✅ 已成功複製前一日的排程版型！");
-        } else { alert("⚠️ 昨日尚無排程資料。"); }
+        let selectEl = document.getElementById('copyDateSelect');
+        selectEl.innerHTML = '';
+        
+        let availableDates = Object.keys(appData.days).filter(dStr => {
+            if (dStr === currentDateStr) return false;
+            let dayData = appData.days[dStr];
+            let hasTime = dayData.times && dayData.times.some(t => t > 0);
+            let hasTask = dayData.tasks && dayData.tasks.length > 0;
+            return hasTime || hasTask;
+        });
+        
+        if (availableDates.length === 0) {
+            alert("⚠️ 系統內尚未建立其他具備排程資料的歷史紀錄。");
+            return;
+        }
+        
+        availableDates.sort().reverse();
+        availableDates = availableDates.slice(0, 14);
+        
+        let weekDays = ["日", "一", "二", "三", "四", "五", "六"];
+        
+        availableDates.forEach(dStr => {
+            let d = new Date(dStr);
+            let opt = document.createElement('option');
+            opt.value = dStr;
+            opt.textContent = `${dStr} (週${weekDays[d.getDay()]})`;
+            selectEl.appendChild(opt);
+        });
+        
+        document.getElementById('copyModal').style.display = 'flex';
+    }
+
+    function closeCopyModal() {
+        document.getElementById('copyModal').style.display = 'none';
+    }
+
+    function confirmCopy() {
+        let targetDate = document.getElementById('copyDateSelect').value;
+        if (!targetDate || !appData.days[targetDate]) {
+            alert("⚠️ 請選擇有效的日期。");
+            return;
+        }
+        
+        let clone = JSON.parse(JSON.stringify(appData.days[targetDate]));
+        clone.tasks.forEach(t => { t.checked = false; t.completed = false; t.projValue = 0; delete t.ep; });
+        clone.exchanges.forEach(e => { e.checked = false; e.completed = false; });
+        clone.dailyNote = ""; 
+        appData.days[currentDateStr] = clone; 
+        loadDayToDOM(currentDateStr); 
+        saveData(); 
+        closeCopyModal();
+        alert("✅ 已成功複製指定日期的排程版型！");
     }
 
     function refreshAllProjectBindings() { document.querySelectorAll('#missionContainer .list-item').forEach(el => checkProjectBinding(el)); }
@@ -1206,99 +1354,6 @@ function clearAllData() {
         }
     }
 
-    function previewProjectCalc() {
-        let goal = parseInt(document.getElementById('new-proj-goal').value) || 0;
-        let days = parseInt(document.getElementById('new-proj-days').value) || 0;
-        let suggestSpan = document.getElementById('new-proj-daily-suggest');
-        
-        if(goal > 0 && days > 0) {
-            let avg = (goal / days).toFixed(1);
-            suggestSpan.innerText = avg.replace('.0','');
-        } else { suggestSpan.innerText = '--'; }
-    }
-
-    function submitProjectForm() {
-        let name = document.getElementById('new-proj-name').value.trim();
-        let domain = document.getElementById('new-proj-domain').value;
-        let type = document.getElementById('new-proj-type').value;
-        let goal = parseInt(document.getElementById('new-proj-goal').value);
-        let unit = document.getElementById('new-proj-unit').value.trim() || '頁';
-        let days = parseInt(document.getElementById('new-proj-days').value);
-        let ep = parseInt(document.getElementById('new-proj-ep').value) || 5;
-        let projMemo = document.getElementById('new-proj-memo').value.trim();
-
-        if(!name || isNaN(goal) || isNaN(days) || days <= 0 || goal <= 0) { alert("請完整填寫專案的所有欄位項目！"); return; }
-        
-        let projObj = { name, domain, type, totalGoal: goal, unit, duration: days, status: 'active', ep, projMemo };
-
-        if(editingProjectIdx === -1) {
-            if(appData.projects.some(p => p.name === name)) { alert("這個專案名稱已經存在囉！"); return; }
-            projObj.id = generateUUID();
-            appData.projects.push(projObj);
-            appData.domainOptions[domain].push({ id: projObj.id, type, name, memo: "★專案", hidden: false, ep });
-        } else {
-            if(appData.projects.some((p, i) => p.name === name && i !== editingProjectIdx)) { alert("這個專案名稱已經存在。"); return; }
-            let oldP = appData.projects[editingProjectIdx];
-            projObj.status = oldP.status;
-            projObj.id = oldP.id;
-            
-            let oldOptIdx = appData.domainOptions[oldP.domain].findIndex(o => o.id === oldP.id || (o.name === oldP.name && o.memo === "★專案"));
-            if(oldOptIdx > -1) appData.domainOptions[oldP.domain].splice(oldOptIdx, 1);
-            appData.domainOptions[domain].push({ id: projObj.id, type, name, memo: "★專案", hidden: (oldP.status === 'completed'), ep });
-
-            appData.projects[editingProjectIdx] = projObj;
-        }
-        syncAndRenderDomains();
-        clearProjectForm(); loadDayToDOM(currentDateStr); renderCalendar();
-    }
-
-    function editProject(idx) {
-        alert("提示：修改好的名稱與設定會套用到專案本身，過去的歷史紀錄將保留原始名稱。");
-        
-        editingProjectIdx = idx; let p = appData.projects[idx];
-        
-        let nameInput = document.getElementById('new-proj-name');
-        nameInput.value = p.name;
-        if(p.status === 'completed') {
-            nameInput.disabled = true;
-            nameInput.style.backgroundColor = '#f1f2f6';
-        } else {
-            nameInput.disabled = false;
-            nameInput.style.backgroundColor = '';
-        }
-
-        document.getElementById('new-proj-domain').value = p.domain;
-        document.getElementById('new-proj-type').value = p.type;
-        document.getElementById('new-proj-goal').value = p.totalGoal;
-        document.getElementById('new-proj-unit').value = p.unit;
-        document.getElementById('new-proj-days').value = p.duration;
-        document.getElementById('new-proj-ep').value = p.ep || 5;
-        document.getElementById('new-proj-memo').value = p.projMemo || '';
-
-        document.getElementById('btn-submit-proj').innerText = "💾 儲存修改";
-        document.getElementById('btn-submit-proj').style.background = "#00b894";
-        document.getElementById('btn-cancel-proj').style.display = "inline-block";
-        previewProjectCalc();
-    }
-
-    function clearProjectForm() {
-        ['new-proj-name', 'new-proj-goal', 'new-proj-unit', 'new-proj-days', 'new-proj-memo'].forEach(id => {
-            let el = document.getElementById(id);
-            if(el) el.value = '';
-        });
-        document.getElementById('new-proj-ep').value = '5';
-        document.getElementById('new-proj-daily-suggest').innerText = '--';
-        
-        let nameInput = document.getElementById('new-proj-name');
-        nameInput.disabled = false;
-        nameInput.style.backgroundColor = '';
-
-        editingProjectIdx = -1;
-        document.getElementById('btn-submit-proj').innerText = "➕ 新增";
-        document.getElementById('btn-submit-proj').style.background = "#0984e3";
-        document.getElementById('btn-cancel-proj').style.display = "none";
-    }
-
     function removeProject(idx) { 
         if(confirm("確定要徹底刪除這個專案設定嗎？ (歷史紀錄將退化為一般常規內容)")) {
             let p = appData.projects[idx];
@@ -1370,12 +1425,9 @@ function clearAllData() {
         domains.forEach((dom, dIdx) => {
             let html = `
             <div class="domain-setting-block">
-                <h3 class="domain-title">📌 ${dom}</h3>
-                <div class="settings-input-group">
-                    <input type="text" class="opt-name" id="add-${dom}" placeholder="輸入新的內容描述">
-                    <input type="text" class="opt-memo" id="memo-${dom}" placeholder="備註">
-                    EP：<input type="number" class="opt-ep" id="ep-${dom}" value="5" min="1" style="width:55px;">
-                    <button class="tab-btn" style="background:var(--success); color:white; padding:6px 15px;" onclick="addDomainOption('${dom}')">➕ 新增</button>
+                <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px dashed #74b9ff; margin-bottom: 12px; padding-bottom: 8px;">
+                    <h3 class="domain-title" style="border: none; margin: 0; padding: 0;">📌 ${dom}</h3>
+                    <button class="tab-btn" style="background:var(--success); color:white; padding:4px 12px; font-size: 0.9rem;" onclick="openAddDomainOptModal('${dom}')">➕ 新增</button>
                 </div>
                 <ul class="settings-list">`;
             
@@ -1467,31 +1519,157 @@ function clearAllData() {
         syncAndRenderDomains(); 
     }
     
-    function addDomainOption(domain) { 
-        const nameInput = document.getElementById('add-'+domain); 
-        const memoInput = document.getElementById('memo-'+domain);
-        const epInput = document.getElementById('ep-'+domain);
-        
-        const nameVal = nameInput.value.trim(); 
-        const memoVal = memoInput.value.trim();
-        const epVal = parseInt(epInput.value) || 5;
-
-        if(nameVal) { 
-            if(!appData.domainOptions[domain].some(o => o.name === nameVal)) { 
-                appData.domainOptions[domain].push({id: generateUUID(), type: "指定", name: nameVal, memo: memoVal, hidden: false, ep: epVal}); 
-                nameInput.value=''; memoInput.value=''; epInput.value='5';
-                syncAndRenderDomains();
-            } else { 
-                alert("這個任務項目已經存在囉！"); 
-            }
-        } 
-    }
-    
     function removeDomainOption(domain, optId) { 
         if(confirm("確定刪除嗎？")) { 
             appData.domainOptions[domain] = appData.domainOptions[domain].filter(o => o.id !== optId); 
             syncAndRenderDomains(); 
         } 
+    }
+
+    // Modal 功能操作區域
+    
+    function openAddProjectModal() {
+        document.getElementById('add-proj-name').value = '';
+        document.getElementById('add-proj-goal').value = '';
+        document.getElementById('add-proj-unit').value = '';
+        document.getElementById('add-proj-days').value = '';
+        document.getElementById('add-proj-ep').value = '5';
+        document.getElementById('add-proj-memo').value = '';
+        document.getElementById('add-proj-daily-suggest').innerText = '--';
+        document.getElementById('addProjectModal').style.display = 'flex';
+    }
+
+    function closeAddProjectModal() {
+        document.getElementById('addProjectModal').style.display = 'none';
+    }
+
+    function previewAddProjectCalc() {
+        let goal = parseInt(document.getElementById('add-proj-goal').value) || 0;
+        let days = parseInt(document.getElementById('add-proj-days').value) || 0;
+        let suggestSpan = document.getElementById('add-proj-daily-suggest');
+        if(goal > 0 && days > 0) {
+            let avg = (goal / days).toFixed(1);
+            suggestSpan.innerText = avg.replace('.0','');
+        } else { suggestSpan.innerText = '--'; }
+    }
+
+    function submitProjectForm() {
+        let name = document.getElementById('add-proj-name').value.trim();
+        let domain = document.getElementById('add-proj-domain').value;
+        let type = document.getElementById('add-proj-type').value;
+        let goal = parseInt(document.getElementById('add-proj-goal').value);
+        let unit = document.getElementById('add-proj-unit').value.trim() || '頁';
+        let days = parseInt(document.getElementById('add-proj-days').value);
+        let ep = parseInt(document.getElementById('add-proj-ep').value) || 5;
+        let projMemo = document.getElementById('add-proj-memo').value.trim();
+
+        if(!name || isNaN(goal) || isNaN(days) || days <= 0 || goal <= 0) { alert("請完整填寫專案的所有欄位項目！"); return; }
+        if(appData.projects.some(p => p.name === name)) { alert("這個專案名稱已經存在囉！"); return; }
+        
+        let projObj = { id: generateUUID(), name, domain, type, totalGoal: goal, unit, duration: days, status: 'active', ep, projMemo };
+        appData.projects.push(projObj);
+        appData.domainOptions[domain].push({ id: projObj.id, type, name, memo: "★專案", hidden: false, ep });
+
+        syncAndRenderDomains();
+        closeAddProjectModal();
+        loadDayToDOM(currentDateStr); 
+        renderCalendar();
+    }
+
+function editProject(idx) {
+        editingProjectIdx = idx;
+        let p = appData.projects[idx];
+        document.getElementById('edit-proj-name').value = p.name;
+        document.getElementById('edit-proj-domain').value = p.domain;
+        document.getElementById('edit-proj-type').value = p.type;
+        document.getElementById('edit-proj-goal').value = p.totalGoal;
+        document.getElementById('edit-proj-unit').value = p.unit;
+        document.getElementById('edit-proj-days').value = p.duration;
+        document.getElementById('edit-proj-ep').value = p.ep || 5;
+        document.getElementById('edit-proj-memo').value = p.projMemo || '';
+        document.getElementById('editProjectModal').style.display = 'flex';
+    }
+
+    function closeEditProjectModal() {
+        editingProjectIdx = -1;
+        document.getElementById('editProjectModal').style.display = 'none';
+    }
+
+    function saveEditProject() {
+        if (editingProjectIdx === -1) return;
+        let p = appData.projects[editingProjectIdx];
+        let newDomain = document.getElementById('edit-proj-domain').value;
+        let newType = document.getElementById('edit-proj-type').value;
+        let newGoal = parseInt(document.getElementById('edit-proj-goal').value);
+        let newUnit = document.getElementById('edit-proj-unit').value.trim();
+        let newDays = parseInt(document.getElementById('edit-proj-days').value);
+        let newEp = parseInt(document.getElementById('edit-proj-ep').value) || 5;
+        let newMemo = document.getElementById('edit-proj-memo').value.trim();
+
+        if (isNaN(newGoal) || isNaN(newDays) || newDays <= 0 || newGoal <= 0) {
+            alert("目標與天數必須為大於 0 的有效數字！");
+            return;
+        }
+
+        let oldOptIdx = appData.domainOptions[p.domain].findIndex(o => o.id === p.id || (o.name === p.name && o.memo === "★專案"));
+        if (oldOptIdx > -1) {
+            let opt = appData.domainOptions[p.domain][oldOptIdx];
+            if (p.domain !== newDomain) {
+                appData.domainOptions[p.domain].splice(oldOptIdx, 1);
+                opt.type = newType;
+                opt.ep = newEp;
+                appData.domainOptions[newDomain].push(opt);
+            } else {
+                opt.type = newType;
+                opt.ep = newEp;
+            }
+        }
+
+        p.domain = newDomain;
+        p.type = newType;
+        p.totalGoal = newGoal;
+        p.unit = newUnit;
+        p.duration = newDays;
+        p.ep = newEp;
+        p.projMemo = newMemo;
+
+        syncAndRenderDomains();
+        closeEditProjectModal();
+        loadDayToDOM(currentDateStr);
+        renderCalendar();
+    }
+    function openAddDomainOptModal(domain) {
+        currentAddingDomain = domain;
+        document.getElementById('add-opt-title').innerText = `➕ 新增 [${domain}] 內容`;
+        document.getElementById('add-opt-type').value = '指定';
+        document.getElementById('add-opt-name').value = '';
+        document.getElementById('add-opt-memo').value = '';
+        document.getElementById('add-opt-ep').value = '5';
+        document.getElementById('addDomainOptModal').style.display = 'flex';
+    }
+function closeAddDomainOptModal() {
+        currentAddingDomain = '';
+        document.getElementById('addDomainOptModal').style.display = 'none';
+    }
+
+    function addDomainOption() { 
+        if (!currentAddingDomain) return;
+        const typeVal = document.getElementById('add-opt-type').value;
+        const nameVal = document.getElementById('add-opt-name').value.trim(); 
+        const memoVal = document.getElementById('add-opt-memo').value.trim();
+        const epVal = parseInt(document.getElementById('add-opt-ep').value) || 5;
+
+        if(nameVal) { 
+            if(!appData.domainOptions[currentAddingDomain].some(o => o.name === nameVal)) { 
+                appData.domainOptions[currentAddingDomain].push({id: generateUUID(), type: typeVal, name: nameVal, memo: memoVal, hidden: false, ep: epVal}); 
+                syncAndRenderDomains();
+                closeAddDomainOptModal();
+            } else { 
+                alert("這個任務項目已經存在囉！"); 
+            }
+        } else {
+            alert("請輸入內容描述！");
+        }
     }
 </script>
 
